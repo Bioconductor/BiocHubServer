@@ -1,9 +1,5 @@
 require 'sequel'
 
-
-
-
-
 DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest')
 
 def defd? (table)
