@@ -70,7 +70,7 @@ docs.each_with_index do |doc, i|
         :dataprovider => doc["DataProvider"],
         :species => doc["Species"],
         :taxonomyid => doc["TaxonomyId"].to_i, # should this really be an integer?
-        :description => doc["Description"],
+        :description => doc["Description"].force_encoding("utf-8"),
         :genome => doc["Genome"],
         :maintainer => doc["Maintainer"]
     )
