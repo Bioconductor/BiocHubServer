@@ -11,6 +11,9 @@ mode = :mysql
 
 
 if mode == :mysql
+    _DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
+    _DB.run "drop database if exists ahtest;"
+    _DB.run "create database ahtest;"
     DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
 else
     dbfile = "#{File.dirname(__FILE__)}/ahtest.sqlite3"
@@ -20,11 +23,6 @@ else
     DB = Sequel.sqlite(dbfile) 
 end
 
-
-# if mode == :mysql
-#     DB.run "drop database if exists ahtest;"
-#     DB.run "create database ahtest;"
-# end
 
 
 # FIXME - add null/not null, unique etc., constraints throughout
@@ -40,6 +38,7 @@ DB.create_table! :resources do
     TrueClass :coordinate_1_based
     String :maintainer
 end
+
 
 DB.create_table! :rdatapaths do
     primary_key :id
