@@ -19,7 +19,16 @@ coll=db['metadata']
 
 # set up DB somehow....
 
-mode = :mysql
+mode = nil
+if ENV['AHS_DATABASE_TYPE'].nil? or 
+  !(["mysql", "sqlite"].include? ENV['AHS_DATABASE_TYPE'])
+    puts "environment variable AHS_DATABASE_TYPE must be set to"
+    puts "mysql or sqlite."
+    exit
+else
+    mode = ENV['AHS_DATABASE_TYPE'].to_sym
+end
+
 
 url = nil
 if mode == :mysql

@@ -7,7 +7,15 @@ require 'date'
 require 'pp'
 require 'json'
 
-mode = :mysql
+mode = nil
+if ENV['AHS_DATABASE_TYPE'].nil? or 
+  !(["mysql", "sqlite"].include? ENV['AHS_DATABASE_TYPE'])
+    puts "environment variable AHS_DATABASE_TYPE must be set to"
+    puts "mysql or sqlite."
+    exit
+else
+    mode = ENV['AHS_DATABASE_TYPE'].to_sym
+end
 
 url = nil
 if mode == :mysql
@@ -26,10 +34,13 @@ def get_value(thing)
     thing.map{|i| i.values}
 end
 
+get "/" do 
+    "try appending /newerthan/2014-04-01 or /schema_info to the current url."
+end
+
 get "/newerthan/:date"  do
     # a date in the format 2014-04-01
     pd = params[:date]
-    #ascii_str = pd.unpack("U*").map{|c|c.chr}.join
     d = DateTime.strptime(pd, "%Y-%m-%d")
     x = Version.filter{rdatadateadded >  d}.select(:resource_id).all
     ids = x.map{|i| i.resource_id }
@@ -57,4 +68,16 @@ get "/schema_version" do
     else
         "0"
     end
+end
+
+__END__
+
+get "/dump_schema" do 
+end
+
+post "/new_resource" do 
+    # is it a valid object? 
+        # add it to database
+    # else
+        # error
 end

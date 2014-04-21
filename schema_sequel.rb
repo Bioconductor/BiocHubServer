@@ -7,7 +7,16 @@ require 'fileutils'
 
 # mode can be either :sqlite or :mysql
 
-mode = :mysql
+mode = nil
+if ENV['AHS_DATABASE_TYPE'].nil? or 
+  !(["mysql", "sqlite"].include? ENV['AHS_DATABASE_TYPE'])
+    puts "environment variable AHS_DATABASE_TYPE must be set to"
+    puts "mysql or sqlite."
+    exit
+else
+    mode = ENV['AHS_DATABASE_TYPE'].to_sym
+end
+
 
 
 if mode == :mysql
@@ -37,8 +46,11 @@ DB.create_table! :resources do
     String :description
     TrueClass :coordinate_1_based
     String :maintainer
+    Boolean :public # TODO add this
 end
 
+# add users table, info about who uploaded what and when,
+#... permissions.
 
 DB.create_table! :rdatapaths do
     primary_key :id
@@ -59,7 +71,7 @@ end
 DB.create_table! :versions do
     primary_key :id
     String :rdataversion
-    Date :rdatadateadded
+    Date :rdatadateadded # FIXME add index here!
     foreign_key :resource_id, :resources
 end
 
