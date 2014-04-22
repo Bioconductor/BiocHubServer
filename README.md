@@ -96,7 +96,7 @@ Ruby packages are called gems and `gem` is the program used to install them.
 
 After installing ruby as above, install needed gems as follows:
 
-    gem install --no-ri --no-rdoc sqlite3 mysql sinatra shotgun
+    gem install --no-ri --no-rdoc sqlite3 sequel mysql sinatra shotgun
 
 
 #### Running the server
