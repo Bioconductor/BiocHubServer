@@ -63,9 +63,13 @@ you should never need to become root or fiddle with permissions.
     #=> "rbenv is a function"
     ~~~
 
-5.  Install [ruby-build][], which provides the
-   `rbenv install` command that simplifies the process of
-   installing new Ruby versions.
+5.  Install
+[ruby-build](https://github.com/sstephenson/ruby-build),
+which provides the
+`rbenv install` command that simplifies the process of
+installing new Ruby versions:
+
+git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 
 Now you need to install ruby. Go to the 
 [Ruby Downloads Page](https://www.ruby-lang.org/en/downloads/)
@@ -97,7 +101,9 @@ After installing ruby as above, install needed gems as follows:
 
 #### Running the server
 
-Get the sqlite3 database  (ahtest.sqlite3) from ....
+Get the sqlite3 database  (ahtest.sqlite3) from 
+
+    rhino02:/loc/no-backup/dtenenba/ahtest.sqlite3
 
 Copy it to the same directory where this README file lives.
 
