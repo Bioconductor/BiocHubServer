@@ -58,7 +58,6 @@ baddocs = alldocs.find_all{|i| not i.has_key? "BiocVersion"}
 docs = alldocs - baddocs
 
 
-
 #hmmdocs = alldocs.find_all{|i| i["BiocVersion"].class.to_s == "String"}
 
 #docs = hmmdocs # remove this!
@@ -70,7 +69,9 @@ docs = alldocs - baddocs
 # and then loop through it
 docs.each_with_index do |doc, i|
 
-    #pp doc if i > 3580
+    # puts i if i > 6835
+    # pp doc if i > 6835
+
     #puts i if i % 100 == 0
 
     r = Resource.create(
@@ -79,7 +80,7 @@ docs.each_with_index do |doc, i|
         :dataprovider => doc["DataProvider"],
         :species => doc["Species"],
         :taxonomyid => doc["TaxonomyId"].to_i, # should this really be an integer?
-        :description => doc["Description"].force_encoding("utf-8"),
+        :description => doc["Description"].force_encoding("ASCII-8BIT").encode('UTF-8', undef: :replace, replace: ''),
         :genome => doc["Genome"],
         :maintainer => doc["Maintainer"]
     )
@@ -88,7 +89,9 @@ docs.each_with_index do |doc, i|
     # what if there is more than one (of any of these)?
     r.add_rdatapath Rdatapath.new(
         :rdatapath => doc["RDataPath"],
-        :rdataclass => doc["RDataClass"]
+        :rdataclass => doc["RDataClass"],
+        :rdatasize => doc["RDataSize"]
+
     )
 
 
@@ -129,6 +132,12 @@ docs.each_with_index do |doc, i|
     end
     rc = Recipe.create(recipe_hash)
 
+    inputsource = {}
+    inputsource[:sourcefile] = doc["SourceFile"]
+    inputsource[:sourcesize] = doc["SourceSize"] if doc.has_key? "SourceSize"
+    inputsource[:sourceurl] = doc["SourceUrl"]
+    inputsource[:sourceversion] = doc["SourceVersion"]
+    r.add_input_source InputSource.new (inputsource)
 
 end
 

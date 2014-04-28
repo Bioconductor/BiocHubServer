@@ -56,6 +56,7 @@ DB.create_table! :rdatapaths do
     primary_key :id
     String :rdatapath
     String :rdataclass
+    Integer :rdatasize
     foreign_key :resource_id, :resources
 end
 
@@ -77,7 +78,7 @@ end
 
 DB.create_table! :tags do
     primary_key :id
-    String :tag, :text => true
+    String :tag, :text => true # records in mongo were > 255 chars long; not good for tags!
     foreign_key :resource_id, :resources
 end
 
