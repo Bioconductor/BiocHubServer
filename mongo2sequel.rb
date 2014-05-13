@@ -66,6 +66,8 @@ docs = alldocs - baddocs
 
 # pp hmmdocs.first
 
+
+
 # and then loop through it
 docs.each_with_index do |doc, i|
 
@@ -82,7 +84,9 @@ docs.each_with_index do |doc, i|
         :taxonomyid => doc["TaxonomyId"].to_i, # should this really be an integer?
         :description => doc["Description"].force_encoding("ASCII-8BIT").encode('UTF-8', undef: :replace, replace: ''),
         :genome => doc["Genome"],
-        :maintainer => doc["Maintainer"]
+        :maintainer => doc["Maintainer"],
+        :status => 1,
+        :location_prefix => 1
     )
 
 

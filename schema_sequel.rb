@@ -46,7 +46,8 @@ DB.create_table! :resources do
     String :description
     TrueClass :coordinate_1_based
     String :maintainer
-    Boolean :public # TODO add this
+    Integer :status
+    Integer :location_prefix
 end
 
 # add users table, info about who uploaded what and when,
@@ -96,3 +97,12 @@ DB.create_table! :recipes do
     foreign_key :resource_id, :resources
 end
 
+DB.create_table! :statuses do
+    primary_key :id
+    String :status
+end
+
+DB.create_table! :location_prefixes do
+    primary_key :id
+    String :location_prefix
+end
