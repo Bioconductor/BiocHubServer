@@ -4,34 +4,20 @@ require 'fileutils'
 
 ## WARNING: THIS DELETES ALL DATA AND RE-CREATES (empty) TABLES!
 
-
-# mode can be either :sqlite or :mysql
-
-mode = nil
-if ENV['AHS_DATABASE_TYPE'].nil? or 
-  !(["mysql", "sqlite"].include? ENV['AHS_DATABASE_TYPE'])
-    puts "environment variable AHS_DATABASE_TYPE must be set to"
-    puts "mysql or sqlite."
-    exit
-else
-    mode = ENV['AHS_DATABASE_TYPE'].to_sym
-end
-
-
-
-if mode == :mysql
-    DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
-    DB.run "drop database if exists ahtest;"
-    DB.run "create database ahtest;"
-    DB.run "use ahtest;"
-else
+if ENV['AHS_DATABASE_TYPE'] == 'mysql'
+    _DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
+    _DB.run "drop database if exists ahtest;"
+    _DB.run "create database ahtest;"
+    _DB.run "use ahtest;"
+elsif ENV['AHS_DATABASE_TYPE'] == 'sqlite'
     dbfile = "#{File.dirname(__FILE__)}/ahtest.sqlite3"
     if File.exists? dbfile
         FileUtils.rm dbfile
     end
-    DB = Sequel.sqlite(dbfile) 
+    #DB = Sequel.sqlite(dbfile) 
 end
 
+require_relative './db_init'
 
 
 # FIXME - add null/not null, unique etc., constraints throughout
