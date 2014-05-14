@@ -20,10 +20,10 @@ end
 
 
 if mode == :mysql
-    _DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
-    _DB.run "drop database if exists ahtest;"
-    _DB.run "create database ahtest;"
     DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
+    DB.run "drop database if exists ahtest;"
+    DB.run "create database ahtest;"
+    DB.run "use ahtest;"
 else
     dbfile = "#{File.dirname(__FILE__)}/ahtest.sqlite3"
     if File.exists? dbfile
@@ -38,6 +38,8 @@ end
 
 DB.create_table! :resources do
     primary_key :id
+    String :ah_id, {:null => false, :unique => true}
+
     String :title
     String :dataprovider
     String :species
@@ -48,7 +50,7 @@ DB.create_table! :resources do
     String :maintainer
     Integer :status
     Integer :location_prefix
-end
+ end
 
 # add users table, info about who uploaded what and when,
 #... permissions.
