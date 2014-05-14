@@ -38,7 +38,6 @@ baddocs = alldocs.find_all{|i| not i.has_key? "BiocVersion"}
 
 docs = alldocs - baddocs
 
-
 #hmmdocs = alldocs.find_all{|i| i["BiocVersion"].class.to_s == "String"}
 
 #docs = hmmdocs # remove this!
@@ -48,13 +47,13 @@ docs = alldocs - baddocs
 # pp hmmdocs.first
 
 
+
 # and then loop through it
 docs.each_with_index do |doc, i|
     # puts i if i > 6835
     # pp doc if i > 6835
 
     #puts i if i % 100 == 0
-
     r = Resource.create(
         :title => doc["Title"],
         :coordinate_1_based => doc["Coordinate_1_based"],
@@ -66,8 +65,11 @@ docs.each_with_index do |doc, i|
         :maintainer => doc["Maintainer"]
     )
 
-    # r.location_prefix= lp
-    # r.status= st
+
+    r.location_prefix= lp
+    r.status= st
+
+    r.save
 
     # what if there is more than one (of any of these)?
     r.add_rdatapath Rdatapath.new(
@@ -97,7 +99,19 @@ docs.each_with_index do |doc, i|
 
     r.add_version v
 
-    for tag in doc["Tags"]
+    tags = doc["Tags"]
+    if doc["Tags"].is_a? Hash 
+        tags = []
+        doc["Tags"].each_pair do |k,v|
+            if k.empty?
+                tags << v
+            else
+                tags << "#{k}:#{v}"
+            end
+        end
+    end
+
+    for tag in tags
         t = Tag.create(:tag => tag)
         r.add_tag t
     end

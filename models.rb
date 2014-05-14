@@ -21,8 +21,8 @@ class Resource < Sequel::Model
     one_to_many :tags
     one_to_many :biocversions
     one_to_many :recipes
-    one_to_one  :status
-    one_to_one  :location_prefix
+    many_to_one  :status
+    many_to_one  :location_prefix
 
 
 

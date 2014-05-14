@@ -34,8 +34,8 @@ DB.create_table! :resources do
     String :description
     TrueClass :coordinate_1_based
     String :maintainer
-    Integer :status
-    Integer :location_prefix
+    Integer :status_id
+    Integer :location_prefix_id
  end
 
 # add users table, info about who uploaded what and when,
