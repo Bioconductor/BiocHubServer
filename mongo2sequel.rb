@@ -8,6 +8,7 @@ require 'mongo'
 require 'sequel'
 require 'pp'
 require 'json'
+require 'pry'
 
 include Mongo
 
@@ -18,6 +19,7 @@ coll=db['metadata']
 # for now, just find one document instead of looping through all of them:
 
 # set up DB somehow....
+
 
 mode = nil
 if ENV['AHS_DATABASE_TYPE'].nil? or 
@@ -41,7 +43,8 @@ DB = Sequel.connect(url)
 
 require './models.rb'
 
-
+lp = LocationPrefix.create(:location_prefix => "http://s3.amazonaws.com/annotationhub/")
+st = Status.create(:status=>"public")
 #doc = coll.find_one
 
 # the supposedly good way to do this is to use a cursor:
@@ -67,10 +70,8 @@ docs = alldocs - baddocs
 # pp hmmdocs.first
 
 
-
 # and then loop through it
 docs.each_with_index do |doc, i|
-
     # puts i if i > 6835
     # pp doc if i > 6835
 
@@ -84,11 +85,11 @@ docs.each_with_index do |doc, i|
         :taxonomyid => doc["TaxonomyId"].to_i, # should this really be an integer?
         :description => doc["Description"].force_encoding("ASCII-8BIT").encode('UTF-8', undef: :replace, replace: ''),
         :genome => doc["Genome"],
-        :maintainer => doc["Maintainer"],
-        :status => 1,
-        :location_prefix => 1
+        :maintainer => doc["Maintainer"]
     )
 
+    # r.location_prefix= lp
+    # r.status= st
 
     # what if there is more than one (of any of these)?
     r.add_rdatapath Rdatapath.new(
