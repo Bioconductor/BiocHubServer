@@ -5,7 +5,7 @@ require 'mysql'
 require 'date'
 require 'pp'
 require 'json'
-require_relative './db_init'
+require_relative './db_init' 
 
 
 require './models.rb'
