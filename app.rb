@@ -44,6 +44,27 @@ get "/newerthan/:date"  do
     out.to_json
 end
 
+def clean_hash(arr)
+    arr = arr.map{|i|i.to_hash}
+    for item in arr
+        item.delete :id
+        item.delete :resource_id
+    end
+end
+
+get "/id/:id" do
+    content_type "text/plain"
+    associations = [:versions,
+        :rdatapaths, :input_sources, :tags, :biocversions,
+        :recipes]
+    r = Resource.filter(:id => 1).eager(associations).all.first
+    h = r.to_hash
+    for association in associations
+        h[association] = clean_hash(r.send(association.to_s))
+    end
+    JSON.pretty_generate h
+end
+
 get "/schema_version" do
     if DB.table_exists? :schema_info
         DB[:schema_info].first[:version].to_s
