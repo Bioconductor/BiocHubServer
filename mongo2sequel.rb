@@ -128,6 +128,7 @@ docs.each_with_index do |doc, i|
         recipe_hash[:recipeargs] = recipeargs
     end
     rc = Recipe.create(recipe_hash)
+    r.add_recipe rc
 
     inputsource = {}
     inputsource[:sourcefile] = doc["SourceFile"]
