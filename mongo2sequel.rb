@@ -106,7 +106,7 @@ docs.each_with_index do |doc, i|
             if k.empty?
                 tags << v
             else
-                tags << "#{k}:#{v}"
+                tags << "#{k}=#{v}"
             end
         end
     end
