@@ -50,6 +50,7 @@ def clean_hash(arr)
         item.delete :id
         item.delete :resource_id
     end
+    arr
 end
 
 get "/id/:id" do
