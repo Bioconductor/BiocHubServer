@@ -5,6 +5,7 @@ require 'mysql'
 require 'date'
 require 'pp'
 require 'json'
+require 'pry'
 require_relative './db_init'
 
 
@@ -58,8 +59,15 @@ get "/id/:id" do
     associations = [:versions,
         :rdatapaths, :input_sources, :tags, :biocversions,
         :recipes]
-    r = Resource.filter(:id => 1).eager(associations).all.first
+    r = Resource.filter(:id => params[:id]).eager(associations).all.first
     h = r.to_hash
+    h.delete :status_id
+    binding.pry
+    # h[:status] = r.status[:status]
+    h.delete :location_prefix_id
+    # h[:location_prefix] = r.location_prefix[:location_prefix]
+    h.delete :id
+    h.delete :ah_id
     for association in associations
         h[association] = clean_hash(r.send(association.to_s))
     end
