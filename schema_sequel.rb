@@ -36,6 +36,10 @@ DB.create_table! :resources do
     String :maintainer
     Integer :status_id
     Integer :location_prefix_id
+    Integer :recipe_id
+    String :rdataversion
+    Date :rdatadateadded # FIXME add index here!
+
  end
 
 # add users table, info about who uploaded what and when,
@@ -58,13 +62,6 @@ DB.create_table! :input_sources do
     foreign_key :resource_id, :resources
 end
 
-DB.create_table! :versions do
-    primary_key :id
-    String :rdataversion
-    Date :rdatadateadded # FIXME add index here!
-    foreign_key :resource_id, :resources
-end
-
 DB.create_table! :tags do
     primary_key :id
     String :tag, :text => true # records in mongo were > 255 chars long; not good for tags!
@@ -81,7 +78,6 @@ DB.create_table! :recipes do
     primary_key :id
     String :recipe
     String :package
-    String :recipeargs
     foreign_key :resource_id, :resources
 end
 

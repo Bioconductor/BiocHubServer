@@ -26,18 +26,17 @@ get "/newerthan/:date"  do
     d = DateTime.strptime(pd, "%Y-%m-%d")
     x = Version.filter{rdatadateadded >  d}.select(:resource_id).all
     ids = x.map{|i| i.resource_id }
-    r = Resource.filter(:id => ids).eager(:versions, :rdatapaths,
+    r = Resource.filter(:id => ids).eager(:rdatapaths,
         :input_sources, :tags, :biocversions, :recipes).all
     out = []
     for row in r
         v = row.values
         v[:description] = v[:description].force_encoding("utf-8")
-        v[:versions] = get_value row.versions
         v[:rdatapaths] = get_value row.rdatapaths
         v[:input_sources] = get_value row.input_sources
         v[:tags] = get_value row.tags
         v[:biocversions] = get_value row.biocversions
-        v[:recipes] = get_value row.recipes
+        #FIXME v[:recipes] = get_value row.recipes
         out.push v
         v.to_json
     end
@@ -55,16 +54,13 @@ end
 
 get "/id/:id" do
     content_type "text/plain"
-    associations = [:versions,
-        :rdatapaths, :input_sources, :tags, :biocversions,
-        :recipes]
+    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
     r = Resource.filter(:id => params[:id]).eager(associations).all.first
     h = r.to_hash
-    status = r.status
     location_prefix = r.location_prefix
-    h[:status] = status[:status]
     h.delete :location_prefix_id
     h[:location_prefix] = location_prefix[:location_prefix]
+    # fixme recipes
     h.delete :id
     h.delete :ah_id
     h.delete :status_id

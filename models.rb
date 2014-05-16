@@ -17,19 +17,18 @@ class Resource < Sequel::Model
 
     one_to_many :rdatapaths
     one_to_many :input_sources
-    one_to_many :versions
     one_to_many :tags
     one_to_many :biocversions
-    one_to_many :recipes
-    many_to_one  :status
-    many_to_one  :location_prefix
+    many_to_one :recipes
+    many_to_one :status
+    many_to_one :location_prefix
 
 
 
 
     def after_save
         if self.ah_id =~ /==$/
-            self.update(:ah_id=>"AH_#{self.id}")
+            self.update(:ah_id=>"AH#{self.id}")
         end
 
     end
@@ -44,10 +43,6 @@ class InputSource < Sequel::Model
     many_to_one :resource
 end
 
-class Version < Sequel::Model
-    many_to_one :resource
-end
-
 class Tag < Sequel::Model
     many_to_one :resource
 end
@@ -57,13 +52,13 @@ class Biocversion < Sequel::Model
 end
 
 class Recipe < Sequel::Model
-    many_to_one :resource
+    one_to_many :resource
 end
 
 class Status < Sequel::Model
-    one_to_one :resource
+    one_to_many :resource
 end
 
 class LocationPrefix < Sequel::Model
-    one_to_one :resource
+    one_to_many :resource
 end

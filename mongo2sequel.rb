@@ -79,6 +79,7 @@ docs.each_with_index do |doc, i|
 
     )
 
+    raise "FIXME populate recipes table with distinct recipes"
 
     if doc["BiocVersion"].class.to_s == "String"
         # FIXME - make this more future(and past)-proof
