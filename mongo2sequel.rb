@@ -47,6 +47,53 @@ docs = alldocs - baddocs
 # pp hmmdocs.first
 
 
+# to get all recipe names:
+rnames = {}
+docs.each{|i| rnames[i["Recipe"][""]] = 1 if i.has_key? "Recipe"}
+
+# get the ones that are strings, not hashes:
+docs.each{|i|rnames[i["Recipe"]] = 1 if i.has_key? "Recipe" and i["Recipe"].is_a? String}
+
+# names are in rnames.keys
+
+# to get all recipe args
+@argnames = {}
+docs.each{|i|@argnames[i["RecipeArgs"]] = 1 if i.has_key? "RecipeArgs"};
+# args are in argnames.keys
+
+# NOTE: hardcoding all recipe packages to AnnotationHubData
+
+for recipe in rnames.keys
+    recipe = 'unnamed' if recipe.empty?
+    rcp = Recipe.create(:recipe => recipe, :package => "AnnotationHubData")
+end
+
+@argnames.keys.each_with_index do |key, i|
+    Recipe.create(:recipe => "anon_#{i}", :package=> "AnnotationHubData")
+end
+
+recipes0 = Recipe.find_all
+@recipes = recipes0.each {|i| i.to_hash}
+
+
+def get_matching_recipe_id(doc)
+    return 3 unless doc.has_key? "Recipe"
+    if doc.has_key? "RecipeArgs"
+        for i in 0..@argnames.keys.length
+            return i+1 if @argnames.keys[i] == doc["RecipeArgs"]
+        end
+    end
+    if doc.has_key? "Recipe"
+        if doc["Recipe"].is_a? String
+            return @recipes.find{|i| i.recipe == doc["Recipe"]}[:id]
+        else
+            return @recipes.find{|i| i.recipe == doc["Recipe"][""]}[:id]
+        end
+    end
+    return nil
+end
+
+
 
 # and then loop through it
 docs.each_with_index do |doc, i|
@@ -62,9 +109,13 @@ docs.each_with_index do |doc, i|
         :taxonomyid => doc["TaxonomyId"].to_i, # should this really be an integer?
         :description => doc["Description"].force_encoding("ASCII-8BIT").encode('UTF-8', undef: :replace, replace: ''),
         :genome => doc["Genome"],
-        :maintainer => doc["Maintainer"]
+        :maintainer => doc["Maintainer"],
+        :rdataversion => doc["RDataVersion"],
+        :rdatadateadded => doc["RDataDateAdded"]
+
     )
 
+    r.recipe_id = get_matching_recipe_id(doc)
 
     r.location_prefix= lp
     r.status= st
@@ -79,7 +130,6 @@ docs.each_with_index do |doc, i|
 
     )
 
-    raise "FIXME populate recipes table with distinct recipes"
 
     if doc["BiocVersion"].class.to_s == "String"
         # FIXME - make this more future(and past)-proof
@@ -93,12 +143,6 @@ docs.each_with_index do |doc, i|
     end
 
 
-    v = Version.create(
-        :rdataversion => doc["RDataVersion"],
-        :rdatadateadded => doc["RDataDateAdded"]
-    )
-
-    r.add_version v
 
     tags = doc["Tags"]
     if doc["Tags"].is_a? Hash 
@@ -118,18 +162,18 @@ docs.each_with_index do |doc, i|
     end
 
 
-    recipe_hash = {}
-    recipe_hash[:recipe] = doc["Recipe"]['']
-    recipe_hash[:package] = doc["Recipe"]['package']
+    # recipe_hash = {}
+    # recipe_hash[:recipe] = doc["Recipe"]['']
+    # recipe_hash[:package] = doc["Recipe"]['package']
 
-    if doc.has_key? "RecipeArgs"
-        #pp doc["RecipeArgs"]
-        recipeargs = doc["RecipeArgs"]
-        recipeargs = recipeargs.to_json unless recipeargs.is_a? String
-        recipe_hash[:recipeargs] = recipeargs
-    end
-    rc = Recipe.create(recipe_hash)
-    r.add_recipe rc
+    # if doc.has_key? "RecipeArgs"
+    #     #pp doc["RecipeArgs"]
+    #     recipeargs = doc["RecipeArgs"]
+    #     recipeargs = recipeargs.to_json unless recipeargs.is_a? String
+    #     recipe_hash[:recipeargs] = recipeargs
+    # end
+    # rc = Recipe.create(recipe_hash)
+    # r.add_recipe rc
 
     inputsource = {}
     inputsource[:sourcefile] = doc["SourceFile"]
