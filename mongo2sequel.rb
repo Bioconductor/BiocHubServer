@@ -35,6 +35,7 @@ alldocs = coll.find.to_a
 
 # some (but not all? refnet records have no BiocVersion. FIXME make sure the good ones get in.)
 baddocs = alldocs.find_all{|i| not i.has_key? "BiocVersion"}
+baddocs += alldocs.find_all{|i| i["Description"].nil?}
 
 docs = alldocs - baddocs
 
@@ -45,6 +46,8 @@ docs = alldocs - baddocs
 # puts hmmdocs.length
 
 # pp hmmdocs.first
+
+binding.pry
 
 
 # to get all recipe names:
