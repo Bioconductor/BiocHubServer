@@ -47,7 +47,6 @@ docs = alldocs - baddocs
 
 # pp hmmdocs.first
 
-binding.pry
 
 
 # to get all recipe names:
