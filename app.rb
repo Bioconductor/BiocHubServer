@@ -60,10 +60,13 @@ get "/id/:id" do
     location_prefix = r.location_prefix
     h.delete :location_prefix_id
     h[:location_prefix] = location_prefix[:location_prefix]
-    # fixme recipes
+    recipe = r.recipe
+    h[:recipe] = recipe[:recipe]
+    h[:recipe_package] = recipe[:package]
     h.delete :id
     h.delete :ah_id
     h.delete :status_id
+    h.delete :recipe_id
     for association in associations
         h[association] = clean_hash(r.send(association.to_s))
     end

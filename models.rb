@@ -19,7 +19,7 @@ class Resource < Sequel::Model
     one_to_many :input_sources
     one_to_many :tags
     one_to_many :biocversions
-    many_to_one :recipes
+    many_to_one :recipe
     many_to_one :status
     many_to_one :location_prefix
 

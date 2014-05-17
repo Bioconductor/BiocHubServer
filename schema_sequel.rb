@@ -78,7 +78,6 @@ DB.create_table! :recipes do
     primary_key :id
     String :recipe
     String :package
-    foreign_key :resource_id, :resources
 end
 
 DB.create_table! :statuses do
