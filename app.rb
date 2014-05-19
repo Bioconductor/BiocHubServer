@@ -70,6 +70,8 @@ get "/id/:id" do
     for association in associations
         h[association] = clean_hash(r.send(association.to_s))
     end
+    h[:tags] = h[:tags].map{|i|i[:tag]}
+    h[:biocversions] = h[:biocversions].map{|i|i[:biocversion]}
     JSON.pretty_generate h
 end
 
