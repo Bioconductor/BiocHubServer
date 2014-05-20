@@ -10,6 +10,16 @@ require 'pp'
 require 'json'
 require 'pry'
 
+# encodefiles = ["wgEncodeCshlLongRnaSeq", "wgEncodeCshlShortRnaSeq",
+#     "wgEncodeRikenCage"]
+
+# for file in encodefiles
+#     unless File.exists? file
+#         `curl http://hgdownload.cse.ucsc.edu/goldenpath/hg19/encodeDCC/#{file}/files.txt > #{file}`
+#     end
+# end
+
+
 include Mongo
 
 client = MongoClient.new
@@ -51,7 +61,11 @@ docs = alldocs - baddocs
 
 # to get all recipe names:
 rnames = {}
-docs.each{|i| rnames[i["Recipe"][""]] = 1 if i.has_key? "Recipe"}
+docs.each do |i|
+  rnames[i["Recipe"]] = 1 if i["Recipe"].is_a? String
+  rnames[i["Recipe"][""]] = 1 if i["Recipe"].is_a? Hash
+end
+
 
 # get the ones that are strings, not hashes:
 docs.each{|i|rnames[i["Recipe"]] = 1 if i.has_key? "Recipe" and i["Recipe"].is_a? String}
@@ -65,11 +79,6 @@ docs.each{|i|@argnames[i["RecipeArgs"]] = 1 if i.has_key? "RecipeArgs"};
 
 # NOTE: hardcoding all recipe packages to AnnotationHubData
 
-for recipe in rnames.keys
-    # FIXME - still need to fix this
-    recipe = 'unnamed' if recipe.empty?
-    rcp = Recipe.create(:recipe => recipe, :package => "AnnotationHubData")
-end
 
 @argnames.keys.each_with_index do |key, i|
     names = ["broadpeakBedToGRanges", "narrowpeakBedToGRanges",
@@ -77,15 +86,31 @@ end
     Recipe.create(:recipe => names[i], :package=> "AnnotationHubData")
 end
 
+
+for recipe in rnames.keys
+    rcp = Recipe.create(:recipe => recipe, :package => "AnnotationHubData")
+end
+
+
 recipes0 = Recipe.find_all
 @recipes = recipes0.each {|i| i.to_hash}
 
 
+
+
 def get_matching_recipe_id(doc)
-    return 3 unless doc.has_key? "Recipe"
+
     if doc.has_key? "RecipeArgs"
-        for i in 0..@argnames.keys.length
-            return i+1 if @argnames.keys[i] == doc["RecipeArgs"]
+        if doc["RecipeArgs"].respond_to? :keys
+            colClasses = doc["RecipeArgs"].to_hash["colClasses"]
+            if  colClasses.has_key? "signif"
+                return @recipes.find {|i|i[:recipe] == "bedrnaelementsToGRanges"}.id
+            elsif colClasses.has_key? "peak"
+                return @recipes.find {|i|i[:recipe] == "narrowpeakBedToGRanges"}.id
+            else
+                return @recipes.find {|i|i[:recipe] == "broadpeakBedToGRanges"}.id
+            end
+                
         end
     end
     if doc.has_key? "Recipe"
@@ -98,6 +123,13 @@ def get_matching_recipe_id(doc)
     return nil
 end
 
+#docs = docs.find_all{|i| i["Recipe"].empty?} # remove this!!!!!!
+
+### REMOVE THIS:
+#docs = docs.find_all{|i| i["SourceUrl"] =~ /wgEncodeCshlLongRnaSeq|wgEncodeCshlShortRnaSeq|wgEncodeRikenCage/}
+#binding.pry
+
+### END REMOVE
 
 
 # and then loop through it
