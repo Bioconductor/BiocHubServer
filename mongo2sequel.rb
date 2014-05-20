@@ -66,12 +66,15 @@ docs.each{|i|@argnames[i["RecipeArgs"]] = 1 if i.has_key? "RecipeArgs"};
 # NOTE: hardcoding all recipe packages to AnnotationHubData
 
 for recipe in rnames.keys
+    # FIXME - still need to fix this
     recipe = 'unnamed' if recipe.empty?
     rcp = Recipe.create(:recipe => recipe, :package => "AnnotationHubData")
 end
 
 @argnames.keys.each_with_index do |key, i|
-    Recipe.create(:recipe => "anon_#{i}", :package=> "AnnotationHubData")
+    names = ["broadpeakBedToGRanges", "narrowpeakBedToGRanges",
+        "bedrnaelementsToGRanges"]
+    Recipe.create(:recipe => names[i], :package=> "AnnotationHubData")
 end
 
 recipes0 = Recipe.find_all
