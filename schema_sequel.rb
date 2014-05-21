@@ -50,6 +50,8 @@ DB.create_table! :rdatapaths do
     String :rdatapath
     String :rdataclass
     Integer :rdatasize
+    String :derivedmd5
+    Date :rdatalastmodifieddate
     foreign_key :resource_id, :resources
 end
 
@@ -59,6 +61,8 @@ DB.create_table! :input_sources do
     String :sourcesize # integer?
     String :sourceurl
     String :sourceversion
+    String :sourcemd5
+    Date :sourcelastmodifieddate
     foreign_key :resource_id, :resources
 end
 

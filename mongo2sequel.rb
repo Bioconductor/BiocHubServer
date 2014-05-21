@@ -160,11 +160,14 @@ docs.each_with_index do |doc, i|
     r.save
 
     # what if there is more than one (of any of these)?
+    rdatalastmodifieddate = doc.has_key?("RDataLastModifiedDate") \
+        ? doc["RDataLastModifiedDate"] : nil
     r.add_rdatapath Rdatapath.new(
         :rdatapath => doc["RDataPath"],
         :rdataclass => doc["RDataClass"],
-        :rdatasize => doc["RDataSize"]
-
+        :rdatasize => doc["RDataSize"],
+        # no mongo docs have derivedmd5
+        :rdatalastmodifieddate => rdatalastmodifieddate
     )
 
 
@@ -199,24 +202,13 @@ docs.each_with_index do |doc, i|
     end
 
 
-    # recipe_hash = {}
-    # recipe_hash[:recipe] = doc["Recipe"]['']
-    # recipe_hash[:package] = doc["Recipe"]['package']
-
-    # if doc.has_key? "RecipeArgs"
-    #     #pp doc["RecipeArgs"]
-    #     recipeargs = doc["RecipeArgs"]
-    #     recipeargs = recipeargs.to_json unless recipeargs.is_a? String
-    #     recipe_hash[:recipeargs] = recipeargs
-    # end
-    # rc = Recipe.create(recipe_hash)
-    # r.add_recipe rc
 
     inputsource = {}
     inputsource[:sourcefile] = doc["SourceFile"]
     inputsource[:sourcesize] = doc["SourceSize"] if doc.has_key? "SourceSize"
     inputsource[:sourceurl] = doc["SourceUrl"]
     inputsource[:sourceversion] = doc["SourceVersion"]
+    # no mongo docs have sourcemd5 or sourcelastmodifieddate
     r.add_input_source InputSource.new (inputsource)
 
 end
