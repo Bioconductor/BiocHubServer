@@ -50,7 +50,7 @@ DB.create_table! :rdatapaths do
     String :rdatapath
     String :rdataclass
     Integer :rdatasize
-    String :derivedmd5
+    String :rdatamd5
     Date :rdatalastmodifieddate
     foreign_key :resource_id, :resources
 end
