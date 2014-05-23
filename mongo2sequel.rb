@@ -171,10 +171,10 @@ docs.each_with_index do |doc, i|
     )
 
 
-    if doc["BiocVersion"].class.to_s == "String"
+#    if doc["BiocVersion"].class.to_s == "String"
         # FIXME - make this more future(and past)-proof
         doc["BiocVersion"] = ["2.12", "2.13", "2.14", "3.0"]
-    end
+#    end
 
 
     for biocversion in doc["BiocVersion"]
