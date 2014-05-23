@@ -75,6 +75,43 @@ get "/id/:id" do
     JSON.pretty_generate h
 end
 
+post '/new_resource' do
+    #require 'pry';binding.pry
+    unless params.has_key? "payload"
+        status 500
+        return "no 'payload' parameter!"
+    end
+    obj = nil
+    begin
+        obj = JSON.parse(params[:payload])
+    rescue
+        status 500
+        return "could not parse payload"
+    end
+    # #...
+    # rsrc = {}
+    # obj.each_pair do |key, value|
+    #     rsrc[key] = value unless value.is_a? Array or value.is_a? Hash
+    # end
+
+    # resource = Resource.new rsrc
+    # unless resource.valid?
+    #     status 500
+    #     return "invalid resource: #{resource.errors}"
+    # end
+    # DB.transaction do
+    #     resource.save 
+    #     rdatapath.save
+    #     ...
+        
+    # end    
+    "ok"
+end
+
+get '/test' do
+    "sorry\n"
+end
+
 get "/schema_version" do
     if DB.table_exists? :schema_info
         DB[:schema_info].first[:version].to_s

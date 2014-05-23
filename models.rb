@@ -8,6 +8,19 @@ require 'securerandom'
 
 class Resource < Sequel::Model
 
+    def  validate
+        # super
+        # required_fields = [:title, :dataprovider, :species, :taxonomyid,
+        #     :genome, :description, :coordinate_1_based, :maintainer,
+        #     :rdataversion, :rdatadateadded]
+        # for item in required_fields
+        #     pp item
+        #     thing = self.send(item)
+        #     errors.add(item, 'cannot be empty') if !thing || thing.empty?
+        # end
+        # # errors.add(:title, 'cannot be empty') if !title || title.empty?
+    end
+
     def before_save
         unless self.ah_id =~ /^AH/
             self.ah_id = SecureRandom.base64        
