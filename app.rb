@@ -17,17 +17,18 @@ def get_value(thing)
 end
 
 get "/" do 
-    "try appending /newerthan/2014-04-01 or /schema_info to the current url."
+    "try appending /newerthan/2013-04-01 or /schema_info to the current url."
 end
 
 get "/newerthan/:date"  do
     # a date in the format 2014-04-01
     pd = params[:date]
     d = DateTime.strptime(pd, "%Y-%m-%d")
-    x = Resource.filter{rdatadateadded >  d}.select(:resource_id).all
-    ids = x.map{|i| i.resource_id }
-    r = Resource.filter(:id => ids).eager(:rdatapaths,
-        :input_sources, :tags, :biocversions, :recipes).all
+    r = Resource.filter{rdatadateadded >  d}.all #select(:resource_id).all
+    #require 'pry'; binding.pry
+    # ids = x.map{|i| i.resource_id }
+    # r = Resource.filter(:id => ids).eager(:rdatapaths,
+    #     :input_sources, :tags, :biocversions, :recipes).all
     out = []
     for row in r
         v = row.values
@@ -87,6 +88,11 @@ post '/new_resource' do
         status 500
         return "could not parse payload"
     end
+
+    if obj.has_key? "biocversions" and obj["biocversions"].is_a? String
+        obj["biocversions"] = [obj["biocversions"]]
+    end
+
     rsrc = {}
     obj.each_pair do |key, value|
         rsrc[key] = value unless value.is_a? Array or value.is_a? Hash
