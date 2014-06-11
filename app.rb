@@ -76,7 +76,6 @@ get "/id/:id" do
 end
 
 post '/new_resource' do
-    #require 'pry';binding.pry
     unless params.has_key? "payload"
         status 500
         return "no 'payload' parameter!"
@@ -89,22 +88,45 @@ post '/new_resource' do
         return "could not parse payload"
     end
     # #...
-    # rsrc = {}
-    # obj.each_pair do |key, value|
-    #     rsrc[key] = value unless value.is_a? Array or value.is_a? Hash
-    # end
+    rsrc = {}
+    obj.each_pair do |key, value|
+        rsrc[key] = value unless value.is_a? Array or value.is_a? Hash
+    end
 
-    # resource = Resource.new rsrc
-    # unless resource.valid?
-    #     status 500
-    #     return "invalid resource: #{resource.errors}"
-    # end
-    # DB.transaction do
-    #     resource.save 
-    #     rdatapath.save
-    #     ...
-        
-    # end    
+    unless rsrc.has_key? "location_prefix"
+        status 500
+        return "no location_prefix"
+    end
+
+    # start transaction here
+    DB.transaction do
+
+
+        lp = LocationPrefix.find_or_create(:location_prefix => rsrc["location_prefix"])
+        rsrc.delete "location_prefix"
+        rsrc["location_prefix_id"] = lp.id
+
+        recipe = Recipe.find_or_create(:recipe => rsrc["recipe"],
+            :package=>rsrc["recipe_package"])
+        rsrc.delete "recipe"
+        rsrc.delete "recipe_package"
+        rsrc["recipe_id"] = recipe.id
+
+        resource = Resource.new rsrc
+        unless resource.valid?
+            status 500
+            return "invalid resource: #{resource.errors}"
+        end
+
+        # fixme - make sure rdatapaths exist and are valid
+        resource.save 
+        require 'pry'; binding.pry
+        # rdatapath.save
+        # ...
+
+
+    end
+
     "ok"
 end
 
