@@ -24,7 +24,7 @@ get "/newerthan/:date"  do
     # a date in the format 2014-04-01
     pd = params[:date]
     d = DateTime.strptime(pd, "%Y-%m-%d")
-    x = Version.filter{rdatadateadded >  d}.select(:resource_id).all
+    x = Resource.filter{rdatadateadded >  d}.select(:resource_id).all
     ids = x.map{|i| i.resource_id }
     r = Resource.filter(:id => ids).eager(:rdatapaths,
         :input_sources, :tags, :biocversions, :recipes).all
@@ -87,7 +87,6 @@ post '/new_resource' do
         status 500
         return "could not parse payload"
     end
-    # #...
     rsrc = {}
     obj.each_pair do |key, value|
         rsrc[key] = value unless value.is_a? Array or value.is_a? Hash
@@ -98,35 +97,60 @@ post '/new_resource' do
         return "no location_prefix"
     end
 
+    # fixme - check for duplicates, either here or in valid?()
+
     # start transaction here
-    DB.transaction do
+    begin
+        DB.transaction(:rollback => :reraise) do
+            lp = LocationPrefix.find_or_create(:location_prefix =>
+                rsrc["location_prefix"])
+            rsrc.delete "location_prefix"
+            rsrc["location_prefix_id"] = lp.id
 
+            recipe = Recipe.find_or_create(:recipe => rsrc["recipe"],
+                :package=>rsrc["recipe_package"])
+            rsrc.delete "recipe"
+            rsrc.delete "recipe_package"
+            rsrc["recipe_id"] = recipe.id
 
-        lp = LocationPrefix.find_or_create(:location_prefix => rsrc["location_prefix"])
-        rsrc.delete "location_prefix"
-        rsrc["location_prefix_id"] = lp.id
+            resource = Resource.new rsrc
+            unless resource.valid?
+                status 500
+                return "invalid resource: #{resource.errors}"
+            end
 
-        recipe = Recipe.find_or_create(:recipe => rsrc["recipe"],
-            :package=>rsrc["recipe_package"])
-        rsrc.delete "recipe"
-        rsrc.delete "recipe_package"
-        rsrc["recipe_id"] = recipe.id
+            # fixme - make sure rdatapaths exist and are valid
+            resource.status_id = Status.find(:status => "Unreviewed").id
+            resource.save 
 
-        resource = Resource.new rsrc
-        unless resource.valid?
-            status 500
-            return "invalid resource: #{resource.errors}"
+            for rdatapath in obj["rdatapaths"]
+                rdatapath["resource_id"] = resource.id
+                # fixme - shouldn't need this after a while
+                if rdatapath.has_key? "derivedmd5"
+                    rdatapath["rdatamd5"] = rdatapath.delete("derivedmd5")
+                end
+                Rdatapath.create(rdatapath)
+            end
+
+            for input_source in obj["input_sources"]
+                input_source["resource_id"] = resource.id
+                InputSource.create(input_source)
+            end
+
+            for tag in obj["tags"]
+                Tag.create(:resource_id => resource.id, :tag => tag)
+            end
+
+            for biocversion in obj["biocversions"]
+                Biocversion.create(:resource_id => resource.id, 
+                    :biocversion => biocversion)
+            end
         end
 
-        # fixme - make sure rdatapaths exist and are valid
-        resource.save 
-        require 'pry'; binding.pry
-        # rdatapath.save
-        # ...
-
-
+    rescue Exception => ex 
+        status 500
+        return ex.message
     end
-
     "ok"
 end
 
