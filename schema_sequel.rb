@@ -89,6 +89,11 @@ DB.create_table! :statuses do
     String :status
 end
 
+DB[:statuses].insert(:status => "Unreviewed")
+DB[:statuses].insert(:status => "Public")
+DB[:statuses].insert(:status => "Private")
+
+
 DB.create_table! :location_prefixes do
     primary_key :id
     String :location_prefix
