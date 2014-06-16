@@ -21,11 +21,20 @@ class Resource < Sequel::Model
         # # errors.add(:title, 'cannot be empty') if !title || title.empty?
     end
 
-    def before_save
+    def before_create
+        h = self.to_hash
+
+        unless Resource.find(h).nil?
+            return false
+        end
         unless self.ah_id =~ /^AH/
             self.ah_id = SecureRandom.base64        
         end
+
+        true
+        #super
     end
+
 
 
     one_to_many :rdatapaths

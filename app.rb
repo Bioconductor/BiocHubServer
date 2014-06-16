@@ -106,6 +106,7 @@ post '/new_resource' do
     # fixme - check for duplicates, either here or in valid?()
 
     # start transaction here
+    resource = nil
     begin
         DB.transaction(:rollback => :reraise) do
             lp = LocationPrefix.find_or_create(:location_prefix =>
@@ -127,7 +128,18 @@ post '/new_resource' do
 
             # fixme - make sure rdatapaths exist and are valid
             resource.status_id = Status.find(:status => "Unreviewed").id
-            resource.save 
+            
+            begin
+                resource.save 
+            rescue Exception => ex
+                if ex.message == "the before_create hook failed"
+                    status "500"
+                    return "attempt to insert duplicate record"
+                else
+                    status "500"
+                    return "exception: #{ex.message}"
+                end
+            end
 
             for rdatapath in obj["rdatapaths"]
                 rdatapath["resource_id"] = resource.id
@@ -157,7 +169,7 @@ post '/new_resource' do
         status 500
         return ex.message
     end
-    "ok"
+    "ok, resource id is #{resource.id}"
 end
 
 get '/test' do
@@ -171,6 +183,18 @@ get "/schema_version" do
         "0"
     end
 end
+
+delete "/id/:id" do
+    r = Resource.find(params[:id])
+    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
+    for assoc in associations
+        a = r.send assoc
+        a.each{|i| i.destroy}
+    end
+    r.destroy
+    status 200
+end
+
 
 __END__
 
