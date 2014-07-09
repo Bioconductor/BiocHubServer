@@ -13,6 +13,7 @@ unless defined? DB
 
     url = nil
     if mode == :mysql
+        # FIXME unhardcode credentials
         url = "mysql://ahuser:password@localhost/ahtest"
     else
         url = "sqlite://#{File.dirname(__FILE__)}/ahtest.sqlite3"

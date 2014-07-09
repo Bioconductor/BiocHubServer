@@ -5,6 +5,7 @@ require 'mysql'
 require 'date'
 require 'pp'
 require 'json'
+require 'tmpdir'
 require_relative './db_init' 
 
 
@@ -74,6 +75,37 @@ get "/id/:id" do
     h[:tags] = h[:tags].map{|i|i[:tag]}
     h[:biocversions] = h[:biocversions].map{|i|i[:biocversion]}
     JSON.pretty_generate h
+end
+
+
+get '/get_db' do
+    if ENV['AHS_DATABASE_TYPE'] == "sqlite"
+        send_file "#{File.dirname(__FILE__)}/ahtest.sqlite3"
+    else
+#        Dir.mktmpdir do |dir|
+            dir = "/tmp"
+            # FIXME unhardcode credentials
+            outfile = "#{dir}/ahtest.sqlite3"
+            FileUtils.rm_rf outfile
+            res = `sequel mysql://ahuser:password@localhost/ahtest -C sqlite://#{outfile}`
+            # puts "res = #{res}"
+            # res = File.exists? outfile
+            # puts "does it exist? #{res}"
+            # puts "outfile is #{outfile}"
+            #res
+            send_file outfile, :filename => "ahtest.sqlite3"
+#        end
+    end
+end
+
+get '/most_recent_date' do
+    content_type "text/plain"
+    DB[:resources].max(:rdatadateadded).to_s
+end
+
+get '/highest_id' do
+    content_type "text/plain"
+    DB[:resources].max(:id).to_s
 end
 
 post '/new_resource' do
