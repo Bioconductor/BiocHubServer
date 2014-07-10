@@ -101,9 +101,10 @@ After installing ruby as above, install needed gems as follows:
 
 #### Running the server
 
-Get the sqlite3 database  (ahtest.sqlite3) from 
+Get the sqlite3 database  (annotationhub.sqlite3) from 
 
-    rhino02:/loc/no-backup/dtenenba/ahtest.sqlite3
+http://gamay:9393/get_db
+
 
 Copy it to the same directory where this README file lives.
 

@@ -1,6 +1,6 @@
 
 # to play in the sequel console, do this:
-# # sequel sqlite://`pwd`/ahtest.sqlite3
+# # sequel sqlite://`pwd`/annotationhub.sqlite3
 
 
 require 'sequel'

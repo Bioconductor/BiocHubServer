@@ -1,6 +1,10 @@
 require 'sequel'
-
+require 'yaml'
 unless defined? DB
+    basedir = File.dirname(__FILE__)
+    config = YAML.load_file("#{basedir}/config.yml")
+
+
     mode = nil
     if ENV['AHS_DATABASE_TYPE'].nil? or 
       !(["mysql", "sqlite"].include? ENV['AHS_DATABASE_TYPE'])
@@ -13,10 +17,9 @@ unless defined? DB
 
     url = nil
     if mode == :mysql
-        # FIXME unhardcode credentials
-        url = "mysql://ahuser:password@localhost/ahtest"
+        url = config['mysql_url']
     else
-        url = "sqlite://#{File.dirname(__FILE__)}/ahtest.sqlite3"
+        url = "sqlite://#{basedir}/#{config['sqlite_filename']}"
     end
 
     DB = Sequel.connect(url)

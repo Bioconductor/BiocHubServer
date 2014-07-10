@@ -1,3 +1,4 @@
-ahtest.sqlite3
+*.sqlite3
 bak.sqlite3
 logs/*
+config.yml

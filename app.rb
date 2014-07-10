@@ -11,6 +11,8 @@ require_relative './db_init'
 
 require './models.rb'
 
+basedir = File.dirname(__FILE__)
+config = YAML.load_file("#{basedir}/config.yml")
 
 def get_value(thing)
     return thing if thing.empty?
@@ -78,22 +80,22 @@ get "/id/:id" do
 end
 
 
-get '/get_db' do
+get "/#{config['sqlite_filename']}" do
     if ENV['AHS_DATABASE_TYPE'] == "sqlite"
-        send_file "#{File.dirname(__FILE__)}/ahtest.sqlite3"
+        send_file "#{basedir}/#{config['sqlite_filename']}",
+            :filename => config['sqlite_filename']
     else
 #        Dir.mktmpdir do |dir|
             dir = "/tmp"
-            # FIXME unhardcode credentials
-            outfile = "#{dir}/ahtest.sqlite3"
+            outfile = "#{dir}/#{config['sqlite_filename']}"
             FileUtils.rm_rf outfile
-            res = `sequel mysql://ahuser:password@localhost/ahtest -C sqlite://#{outfile}`
+            res = `sequel #{config['mysql_url']} -C sqlite://#{outfile}`
             # puts "res = #{res}"
             # res = File.exists? outfile
             # puts "does it exist? #{res}"
             # puts "outfile is #{outfile}"
             #res
-            send_file outfile, :filename => "ahtest.sqlite3"
+            send_file outfile, :filename => config['sqlite_filename']
 #        end
     end
 end

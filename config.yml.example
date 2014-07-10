@@ -1,0 +1,3 @@
+# copy this to config.yml and edit that to match your system
+mysql_url: "mysql://user:password@host/dbname"
+sqlite_filename: "mydatabase.sqlite3"

@@ -1,16 +1,21 @@
 #!/usr/bin/env ruby
 require 'sequel'
 require 'fileutils'
+require 'yaml'
 
 ## WARNING: THIS DELETES ALL DATA AND RE-CREATES (empty) TABLES!
 
+basedir = File.dirname(__FILE__)
+config = YAML.load_file("#{basedir}/config.yml")
+
 if ENV['AHS_DATABASE_TYPE'] == 'mysql'
-    _DB = Sequel.connect('mysql://ahuser:password@localhost/ahtest') 
+
+    _DB = Sequel.connect(config['mysql_url']) 
     _DB.run "drop database if exists ahtest;"
     _DB.run "create database ahtest;"
     _DB.run "use ahtest;"
 elsif ENV['AHS_DATABASE_TYPE'] == 'sqlite'
-    dbfile = "#{File.dirname(__FILE__)}/ahtest.sqlite3"
+    dbfile = "#{basedir}/#{config['sqlite_filename']}"
     if File.exists? dbfile
         FileUtils.rm dbfile
     end
