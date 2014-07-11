@@ -14,13 +14,9 @@ require './models.rb'
 basedir = File.dirname(__FILE__)
 config = YAML.load_file("#{basedir}/config.yml")
 
-def get_value(thing)
-    return thing if thing.empty?
-    thing.map{|i| i.values}
-end
 
 get "/" do 
-    "try appending /newerthan/2013-04-01 or /schema_info to the current url."
+    erb :index, :locals => {:dbname => config['sqlite_filename']}
 end
 
 get "/newerthan/:date"  do
@@ -80,7 +76,7 @@ get "/id/:id" do
 end
 
 
-get "/#{config['sqlite_filename']}" do
+get "/metadata/#{config['sqlite_filename']}" do
     if ENV['AHS_DATABASE_TYPE'] == "sqlite"
         send_file "#{basedir}/#{config['sqlite_filename']}",
             :filename => config['sqlite_filename']
@@ -100,17 +96,17 @@ get "/#{config['sqlite_filename']}" do
     end
 end
 
-get '/most_recent_date' do
+get '/metadata/most_recent_date' do
     content_type "text/plain"
     DB[:resources].max(:rdatadateadded).to_s
 end
 
-get '/highest_id' do
+get '/metadata/highest_id' do
     content_type "text/plain"
     DB[:resources].max(:id).to_s
 end
 
-post '/new_resource' do
+post '/resource' do
     unless params.has_key? "payload"
         status 500
         return "no 'payload' parameter!"
@@ -210,7 +206,7 @@ get '/test' do
     "sorry\n"
 end
 
-get "/schema_version" do
+get "/metadata/schema_version" do
     if DB.table_exists? :schema_info
         DB[:schema_info].first[:version].to_s
     else
@@ -218,7 +214,7 @@ get "/schema_version" do
     end
 end
 
-delete "/id/:id" do
+delete "/resource/:id" do
     r = Resource.find(params[:id])
     associations = [:rdatapaths, :input_sources, :tags, :biocversions]
     for assoc in associations
@@ -227,6 +223,16 @@ delete "/id/:id" do
     end
     r.destroy
     status 200
+end
+
+get '/fetch/:id' do
+    rp = Rdatapath.find(params[:id])
+    path = rp.rdatapath
+    resource = rp.resource
+    prefix = resource.location_prefix.location_prefix
+    url = prefix + path
+    # TODO do some logging here....
+    redirect url
 end
 
 
