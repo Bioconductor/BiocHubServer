@@ -1,0 +1,32 @@
+<html>
+<head>
+    <title>AnnotationHub Server 3.0 API</title>
+</head>
+<body>
+    <pre>
+GET:
+/metadata/schema_version
+/metadata/highest_id
+/metadata/<%=dbname%>
+
+/fetch/:id # id => rdatapaths.id
+
+POST:
+/resource
+
+DELETE:
+/resource/:id # id => resources.id
+(also deletes files from S3 if present)
+
+
+
+
+    </pre>
+
+<p>
+    Right now anyone can add or delete a resource! 
+    So we need to add authentication.
+</p>
+
+</body>
+</html>
