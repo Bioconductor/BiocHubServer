@@ -73,7 +73,7 @@ end
 
 DB.create_table! :tags do
     primary_key :id
-    String :tag, :text => true # records in mongo were > 255 chars long; not good for tags!
+    String :tag, :size => 400
     foreign_key :resource_id, :resources
 end
 
