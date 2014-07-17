@@ -96,9 +96,9 @@ get "/metadata/#{config['sqlite_filename']}" do
     end
 end
 
-get '/metadata/most_recent_date' do
+get '/metadata/database_timestamp' do
     content_type "text/plain"
-    DB[:resources].max(:rdatadateadded).to_s
+    DB[:timestamp].first[:timestamp].to_s
 end
 
 get '/metadata/highest_id' do

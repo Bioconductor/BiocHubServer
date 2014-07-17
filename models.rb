@@ -9,16 +9,16 @@ require 'securerandom'
 class Resource < Sequel::Model
 
     def  validate
-        # super
-        # required_fields = [:title, :dataprovider, :species, :taxonomyid,
-        #     :genome, :description, :coordinate_1_based, :maintainer,
-        #     :rdataversion, :rdatadateadded]
-        # for item in required_fields
-        #     pp item
-        #     thing = self.send(item)
-        #     errors.add(item, 'cannot be empty') if !thing || thing.empty?
-        # end
-        # # errors.add(:title, 'cannot be empty') if !title || title.empty?
+        super
+        required_fields = [:title, :dataprovider, :species, :taxonomyid,
+            :genome, :description, :coordinate_1_based, :maintainer,
+            :rdataversion, :rdatadateadded]
+        for item in required_fields
+            pp item
+            thing = self.send(item)
+            errors.add(item, 'cannot be empty') if !thing || thing.empty?
+        end
+        errors.add(:title, 'cannot be empty') if !title || title.empty?
     end
 
     def before_create
@@ -32,7 +32,7 @@ class Resource < Sequel::Model
         end
 
         true
-        #super
+        super
     end
 
 
@@ -47,12 +47,12 @@ class Resource < Sequel::Model
 
 
 
-
+    ## FIXME - make this a trigger?
     def after_save
+        super
         if self.ah_id =~ /==$/
             self.update(:ah_id=>"AH#{self.id}")
         end
-
     end
 
 end

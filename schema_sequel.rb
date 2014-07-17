@@ -2,6 +2,7 @@
 require 'sequel'
 require 'fileutils'
 require 'yaml'
+require 'time'
 
 ## WARNING: THIS DELETES ALL DATA AND RE-CREATES (empty) TABLES!
 
@@ -9,11 +10,11 @@ basedir = File.dirname(__FILE__)
 config = YAML.load_file("#{basedir}/config.yml")
 
 if ENV['AHS_DATABASE_TYPE'] == 'mysql'
-
+    dbname = config['mysql_url'].split('/').last
     _DB = Sequel.connect(config['mysql_url']) 
-    _DB.run "drop database if exists ahtest;"
-    _DB.run "create database ahtest;"
-    _DB.run "use ahtest;"
+    _DB.run "drop database if exists #{dbname};"
+    _DB.run "create database #{dbname};"
+    _DB.run "use #{dbname};"
 elsif ENV['AHS_DATABASE_TYPE'] == 'sqlite'
     dbfile = "#{basedir}/#{config['sqlite_filename']}"
     if File.exists? dbfile
@@ -103,3 +104,33 @@ DB.create_table! :location_prefixes do
     primary_key :id
     String :location_prefix
 end
+
+DB.create_table! :timestamp do
+    DateTime :timestamp
+end
+
+DB[:timestamp].insert(:timestamp => Time.now)
+
+# triggers
+for table in DB.tables 
+    next if table == :timestamp
+    for op in ['insert', 'update', 'delete']
+        trigger = nil
+        if ENV['AHS_DATABASE_TYPE'] == 'sqlite'
+            trigger=<<-"EOT"
+                 create trigger #{table}_#{op} #{op} on #{table} 
+                   begin
+                   update timestamp set timestamp 
+                     = datetime('now', 'localtime');
+                   end;
+            EOT
+        elsif ENV['AHS_DATABASE_TYPE'] == 'mysql'
+            trigger=<<-"EOT"
+                create trigger #{table}_#{op} after #{op}                   on #{table} for each row                    update timestamp set timestamp = current_timestamp();
+            EOT
+        end
+        DB.run trigger
+    end
+end
+
+
