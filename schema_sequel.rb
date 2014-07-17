@@ -118,7 +118,7 @@ for table in DB.tables
         trigger = nil
         if ENV['AHS_DATABASE_TYPE'] == 'sqlite'
             trigger=<<-"EOT"
-                 create trigger #{table}_#{op} #{op} on #{table} 
+                 create trigger #{table}_#{op} after #{op} on #{table} 
                    begin
                    update timestamp set timestamp 
                      = datetime('now', 'localtime');
@@ -126,7 +126,9 @@ for table in DB.tables
             EOT
         elsif ENV['AHS_DATABASE_TYPE'] == 'mysql'
             trigger=<<-"EOT"
-                create trigger #{table}_#{op} after #{op}                   on #{table} for each row                    update timestamp set timestamp = current_timestamp();
+                create trigger #{table}_#{op} after #{op}
+                  on #{table} for each row 
+                    update timestamp set timestamp = current_timestamp();
             EOT
         end
         DB.run trigger
