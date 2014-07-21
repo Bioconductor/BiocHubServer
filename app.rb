@@ -13,7 +13,23 @@ require './models.rb'
 
 basedir = File.dirname(__FILE__)
 config = YAML.load_file("#{basedir}/config.yml")
+@config = config
 
+helpers do
+    def protected!
+        return if authorized?
+        headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+        halt 401, "Not authorized\n"
+    end
+
+    def authorized?
+      basedir = File.dirname(__FILE__)
+      config = YAML.load_file("#{basedir}/config.yml")
+      @auth ||=  Rack::Auth::Basic::Request.new(request.env)
+      @auth.provided? and @auth.basic? and @auth.credentials and 
+        @auth.credentials == ['admin', config['admin_password']]
+    end
+end
 
 get "/" do 
     erb :index, :locals => {:dbname => config['sqlite_filename']}
@@ -107,6 +123,7 @@ get '/metadata/highest_id' do
 end
 
 post '/resource' do
+    protected!
     unless params.has_key? "payload"
         status 500
         return "no 'payload' parameter!"
@@ -226,6 +243,7 @@ end
 # end
 
 delete "/resource/:id" do
+    protected!
     r = Resource.find(params[:id])
     r.rdatadateremoved = Date.today
     r.save
