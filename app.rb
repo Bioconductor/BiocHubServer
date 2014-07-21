@@ -228,7 +228,10 @@ end
 delete "/resource/:id" do
     r = Resource.find(params[:id])
     r.rdatadateremoved = Date.new
-    r.save    
+    r.save
+    status 200
+    content_type "text/plain"
+    "OK"
 end
 
 get '/fetch/:id' do
