@@ -45,6 +45,7 @@ DB.create_table! :resources do
     Integer :recipe_id
     String :rdataversion
     Date :rdatadateadded # FIXME add index here!
+    Date :rdatadateremoved
 
  end
 

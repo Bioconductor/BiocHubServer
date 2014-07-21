@@ -214,15 +214,21 @@ get "/metadata/schema_version" do
     end
 end
 
+# delete "/resource/:id" do
+#     r = Resource.find(params[:id])
+#     associations = [:rdatapaths, :input_sources, :tags, :biocversions]
+#     for assoc in associations
+#         a = r.send assoc
+#         a.each{|i| i.destroy}
+#     end
+#     r.destroy
+#     status 200
+# end
+
 delete "/resource/:id" do
     r = Resource.find(params[:id])
-    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
-    for assoc in associations
-        a = r.send assoc
-        a.each{|i| i.destroy}
-    end
-    r.destroy
-    status 200
+    r.rdatadateremoved = Date.new
+    r.save    
 end
 
 get '/fetch/:id' do
