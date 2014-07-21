@@ -232,7 +232,7 @@ get "/metadata/schema_version" do
 end
 
 # delete "/resource/:id" do
-#     r = Resource.find(params[:id])
+#     r = Resource.find(:id=>params[:id])
 #     associations = [:rdatapaths, :input_sources, :tags, :biocversions]
 #     for assoc in associations
 #         a = r.send assoc
@@ -244,7 +244,7 @@ end
 
 delete "/resource/:id" do
     protected!
-    r = Resource.find(params[:id])
+    r = Resource.find(:id=>params[:id])
     r.rdatadateremoved = Date.today
     r.save
     status 200
@@ -253,7 +253,7 @@ delete "/resource/:id" do
 end
 
 get '/fetch/:id' do
-    rp = Rdatapath.find(params[:id])
+    rp = Rdatapath.find(:id=>params[:id])
     path = rp.rdatapath
     resource = rp.resource
     prefix = resource.location_prefix.location_prefix
