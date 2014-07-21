@@ -4,6 +4,9 @@ unless defined? DB
     basedir = File.dirname(__FILE__)
     config = YAML.load_file("#{basedir}/config.yml")
 
+    if `hostname` =~ /^ip-/ and ENV['AHS_DATABASE_TYPE'].nil?
+        ENV['AHS_DATABASE_TYPE']='mysql'
+    end
 
     mode = nil
     if ENV['AHS_DATABASE_TYPE'].nil? or 
