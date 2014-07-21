@@ -16,9 +16,9 @@ class Resource < Sequel::Model
         for item in required_fields
             pp item
             thing = self.send(item)
-            errors.add(item, 'cannot be empty') if !thing || thing.empty?
+            errors.add(item, 'cannot be empty') if !thing || 
+                (thing.respond_to? :empty? && thing.empty?)
         end
-        errors.add(:title, 'cannot be empty') if !title || title.empty?
     end
 
     def before_create
