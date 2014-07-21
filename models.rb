@@ -17,7 +17,7 @@ class Resource < Sequel::Model
             pp item
             thing = self.send(item)
             errors.add(item, 'cannot be empty') if !thing || 
-                (thing.respond_to? :empty? && thing.empty?)
+                (thing.respond_to?(:empty?) && thing.empty?)
         end
     end
 
