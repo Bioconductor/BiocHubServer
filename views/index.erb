@@ -11,10 +11,10 @@ GET:
 
 /fetch/:id # id => rdatapaths.id
 
-POST:
+POST: (protected)
 /resource
 
-DELETE:
+DELETE: (protected)
 /resource/:id # id => resources.id, marks resource as expired
 
 
@@ -23,10 +23,6 @@ DELETE:
 
     </pre>
 
-<p>
-    Right now anyone can add or delete a resource! 
-    So we need to add authentication.
-</p>
 
 </body>
 </html>
