@@ -97,18 +97,7 @@ get "/metadata/#{config['sqlite_filename']}" do
         send_file "#{basedir}/#{config['sqlite_filename']}",
             :filename => config['sqlite_filename']
     else
-#        Dir.mktmpdir do |dir|
-            dir = "/tmp"
-            outfile = "#{dir}/#{config['sqlite_filename']}"
-            FileUtils.rm_rf outfile
-            res = `sequel #{config['mysql_url']} -C sqlite://#{outfile}`
-            # puts "res = #{res}"
-            # res = File.exists? outfile
-            # puts "does it exist? #{res}"
-            # puts "outfile is #{outfile}"
-            #res
-            send_file outfile, :filename => config['sqlite_filename']
-#        end
+        send_file "#{basedir}/#{config['sqlite_filename']}"
     end
 end
 
