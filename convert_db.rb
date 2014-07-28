@@ -21,8 +21,11 @@ cachefile = "#{@basedir}/dbtimestamp.cache"
 
 def convert_db()
     outfile = "#{@basedir}/#{@config['sqlite_filename']}"
+    outfile_tmp = outfile + "_tmp"
+    FileUtils.rm_rf outfile_tmp
+    res = `sequel #{@config['mysql_url']} -C sqlite://#{outfile_tmp}`
     FileUtils.rm_rf outfile
-    res = `sequel #{@config['mysql_url']} -C sqlite://#{outfile}`
+    FileUtils.mv outfile_tmp, outfile
     #puts "does it exist? #{File.exists? outfile}"
 end
 
