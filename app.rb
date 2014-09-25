@@ -150,11 +150,13 @@ post '/resource' do
             rsrc.delete "location_prefix"
             rsrc["location_prefix_id"] = lp.id
 
-            recipe = Recipe.find_or_create(:recipe => rsrc["recipe"],
-                :package=>rsrc["recipe_package"])
-            rsrc.delete "recipe"
-            rsrc.delete "recipe_package"
-            rsrc["recipe_id"] = recipe.id
+            if rsrc.has_key? "recipe" and recipe.has_key? "recipe_package"
+                recipe = Recipe.find_or_create(:recipe => rsrc["recipe"],
+                    :package=>rsrc["recipe_package"])
+                rsrc.delete "recipe"
+                rsrc.delete "recipe_package"
+                rsrc["recipe_id"] = recipe.id
+            end
 
             resource = Resource.new rsrc
             unless resource.valid?
