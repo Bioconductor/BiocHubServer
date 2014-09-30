@@ -8,6 +8,7 @@ require 'json'
 require 'tmpdir'
 require_relative './db_init' 
 
+PRODUCTION = !(Socket.gethostname() =~ /^ip-/).nil?
 
 require './models.rb'
 
@@ -17,6 +18,8 @@ config = YAML.load_file("#{basedir}/config.yml")
 
 helpers do
     def protected!
+        # ignore auth unless we are on production
+        return unless PRODUCTION
         return if authorized?
         headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
         halt 401, "Not authorized\n"
@@ -150,7 +153,7 @@ post '/resource' do
             rsrc.delete "location_prefix"
             rsrc["location_prefix_id"] = lp.id
 
-            if rsrc.has_key? "recipe" and recipe.has_key? "recipe_package"
+            if rsrc.has_key? "recipe" and rsrc.has_key? "recipe_package"
                 recipe = Recipe.find_or_create(:recipe => rsrc["recipe"],
                     :package=>rsrc["recipe_package"])
                 rsrc.delete "recipe"
