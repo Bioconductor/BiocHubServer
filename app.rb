@@ -6,7 +6,8 @@ require 'date'
 require 'pp'
 require 'json'
 require 'tmpdir'
-require_relative './db_init' 
+require_relative './db_init'
+require_relative './logging_init'
 
 PRODUCTION = !(Socket.gethostname() =~ /^ip-/).nil?
 
@@ -32,6 +33,25 @@ helpers do
       @auth.provided? and @auth.basic? and @auth.credentials and 
         @auth.credentials == ['admin', config['admin_password']]
     end
+
+    def log_request(request, url, rdatapath_id, resource_id)
+        begin # don't let logging interfere with redirection
+            # do we need a transaction for one statement?
+            LOGGING_DB[:log_entries].insert(
+                :timestamp => DateTime.now,
+                :remote_ip => request.ip,
+                :url => url,
+                :resource_fetched => resource_id,
+                :id_fetched => rdatapath_id,
+                :is_s3 => false,
+                :referrer => request.referrer,
+                :user_agent => request.user_agent
+            )
+        rescue Exception => ex# handle specific exceptions?
+            puts "exception: #{ex.message}"
+        end
+    end
+
 end
 
 get "/" do 
@@ -256,6 +276,9 @@ get '/fetch/:id' do
     prefix = resource.location_prefix.location_prefix
     url = prefix + path
     # TODO do some logging here....
+    unless prefix == "http://s3.amazonaws.com/annotationhub/"
+        log_request(request, url, rp.id, resource.id)
+    end        
     redirect url
 end
 
