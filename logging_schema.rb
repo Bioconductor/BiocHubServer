@@ -19,6 +19,7 @@ require_relative './logging_init'
 LOGGING_DB.create_table! :s3_log_files do
     primary_key :id
     String :filename, {:null => false, :unique => true}
+    index :filename, :unique=>true
 end
 
 # FIXME add appropriate indexes
