@@ -6,10 +6,14 @@ require 'sequel'
 
 require_relative './logging_init'
 
+@rgo = Regexp.new('REST\.GET\.OBJECT')
 
 def parse(line, file)
+    return nil unless line.match(@rgo)
     unless instance_variable_defined?(:@regex)
-        @regex = Regexp.new('^(?<owner>\S+) (?<bucket>\S+) (?<time>\[[^\]]*\]) (?<remote_ip>\S+) (?<requester>\S+) (?<reqid>\S+) (?<operation>\S+) (?<raw_url>\S+) (?<request>"[^"]*") (?<http_status>\S+) (?<s3_error_code>\S+) (?<bytes_sent>\S+) (?<object_size>\S+) (?<total_time>\S+) (?<turn_around_time>\S+) (?<referrer>"[^"]*") (?<user_agent>"[^"]*") (?<s3_version_id>\S)$')
+        #13784cc045aa79ecb3e164200025c7fc9205241e61ba76f40d486de657f5df52 annotationhub [19/Nov/2013:23:34:51 +0000] 140.107.151.128 - 8151DFA13868F466 REST.GET.OBJECT release-69/fasta/callithrix_jacchus/ncrna/Callithrix_jacchus.C_jacchus3.2.1.69.ncrna.fa_0.0.1.json "GET /release-69/fasta/callithrix_jacchus/ncrna/Callithrix_jacchus.C_jacchus3.2.1.69.ncrna.fa_0.0.1.json HTTP/1.1" 403 AccessDenied 231 - 7 - "-" "curl/7.30.0" -
+        #@regex = Regexp.new('(?<owner>\S+) (?<bucket>\S+) (?<time>\[[^\]]*\]) (?<remote_ip>\S+) (?<requester>\S+) (?<reqid>\S+) (?<operation>\S+) (?<raw_url>\S+) "?(?<request>[^" ]*)"? (?<http_status>\S+) (?<s3_error_code>\S+) (?<bytes_sent>\S+) (?<object_size>\S+) (?<total_time>\S+) (?<turn_around_time>\S+) (?<referrer>"[^"]*") (?<user_agent>"[^"]*") (?<s3_version_id>\S)')
+        @regex = Regexp.new '(?<owner>\S+) (?<bucket>\S+) (?<time>\[[^\]]*\]) (?<remote_ip>\S+) (?<requester>\S+) (?<reqid>\S+) (?<operation>\S+) (?<raw_url>\S+) "?(?<request>[^"]*)"? (?<http_status>\S+) (?<s3_error_code>\S+) (?<bytes_sent>\S+) (?<object_size>\S+) (?<total_time>\S+) (?<turn_around_time>\S+) (?<referrer>"[^"]*") (?<user_agent>"[^"]*") (?<s3_version_id>\S)'
     end
     md = @regex.match line
     if md.nil?
@@ -18,7 +22,7 @@ def parse(line, file)
         puts line
         return nil
     end
-    return nil unless md[:operation] == "REST.GET.OBJECT"
+    #return nil unless md[:operation] == "REST.GET.OBJECT"
     hsh = {}
     hsh[:is_s3] = true
     md.names.each do |name|
@@ -29,7 +33,7 @@ def parse(line, file)
             hsh[:timestamp] = DateTime.strptime(md[name],
                 "[%d/%b/%Y:%H:%M:%S %z]")
         elsif name == 'raw_url'
-            hsh[:url] = 'http://s3.amazonaws.com/annotationhub/' + url
+            hsh[:url] = 'http://s3.amazonaws.com/annotationhub/' + md[name]
         end
     end
     hsh
