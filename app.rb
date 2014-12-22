@@ -154,6 +154,9 @@ post '/resource' do
 
     rsrc = {}
     obj.each_pair do |key, value|
+        if key == "recipe_package" and value.is_a? Array and value.uniq.length == 1
+            value = value.first
+        end
         rsrc[key] = value unless value.is_a? Array or value.is_a? Hash
     end
 
