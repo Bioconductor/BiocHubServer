@@ -2,3 +2,4 @@
 mysql_url: "mysql://user:password@host/dbname"
 sqlite_filename: "mydatabase.sqlite3"
 admin_password: "some_password"
+logging_url: "mysql://username:password@host/logging_database_name"
