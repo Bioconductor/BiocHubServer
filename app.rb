@@ -35,6 +35,7 @@ helpers do
     end
 
     def log_request(request, url, rdatapath_id, resource_id)
+        # FIXME only do this if we are on production!
         begin # don't let logging interfere with redirection
             # do we need a transaction for one statement?
             LOGGING_DB[:log_entries].insert(
@@ -278,8 +279,8 @@ get '/fetch/:id' do
     resource = rp.resource
     prefix = resource.location_prefix.location_prefix
     url = prefix + path
-    # TODO do some logging here....
     unless prefix == "http://s3.amazonaws.com/annotationhub/"
+        # FIXME only do this if we are on production...
         log_request(request, url, rp.id, resource.id)
     end        
     redirect url
