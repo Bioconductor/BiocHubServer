@@ -17,6 +17,10 @@ cachefile = "#{@basedir}/dbtimestamp.cache"
 
 @config = YAML.load_file("#{@basedir}/config.yml")
 
+url2 = @config['mysql_url'].sub("annotationhub", "information_schema")
+DB2 = Sequel.connect(url2)
+
+table_created_at = DB2[:tables].where(:table_schema => 'annotationhub').max(:create_time)
 
 
 def convert_db()
@@ -32,7 +36,7 @@ end
 
 if (File.exists?(cachefile))
     cached_time = Time.parse(File.readlines(cachefile).first)
-    if (timestamp > cached_time)
+    if (timestamp > cached_time or table_created_at > cached_time)
         convert_db()
     end
 else
