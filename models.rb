@@ -22,11 +22,11 @@ class Resource < Sequel::Model
     end
 
     def before_create
-        h = self.to_hash
+        # h = self.to_hash
 
-        unless Resource.find(h).nil?
-            return false
-        end
+        # unless Resource.find(h).nil?
+        #     return false
+        # end
         unless self.ah_id =~ /^AH/
             self.ah_id = SecureRandom.base64        
         end
