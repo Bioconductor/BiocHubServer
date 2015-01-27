@@ -241,6 +241,7 @@ post '/resource' do
 end
 
 get '/test' do
+    redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
     "sorry\n"
 end
 
@@ -271,6 +272,20 @@ delete "/resource/:id" do
     status 200
     content_type "text/plain"
     "OK"
+end
+
+
+get '/log_fetch' do
+    rp = Rdatapath.find(:id=>params[:id])
+    path = rp.rdatapath
+    resource = rp.resource
+    prefix = resource.location_prefix.location_prefix
+    url = prefix + path
+    unless prefix == "http://s3.amazonaws.com/annotationhub/"
+        # FIXME only do this if we are on production...
+        log_request(request, url, rp.id, resource.id)
+    end        
+    url
 end
 
 get '/fetch/:id' do
