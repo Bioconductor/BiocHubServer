@@ -242,7 +242,6 @@ end
 
 get '/test' do
     redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
-    "sorry\n"
 end
 
 get "/metadata/schema_version" do
