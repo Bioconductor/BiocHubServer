@@ -36,6 +36,69 @@ class Resource < Sequel::Model
     end
 
 
+    def after_create
+        super
+
+        if self.record_id.nil?
+            self.record_id = self.get_record_id()
+        end
+
+        true
+    end
+
+    ## to update all record ids do this:
+    def self.update_record_ids(force=false)
+        x = nil
+        if force
+            x = Resource.where()
+        else
+            x = Resource.where(record_id: nil)
+        end
+        x.each_with_index do |resource, i|
+            if i % 1000 == 0
+                print "."
+            end
+            resource.record_id = resource.get_record_id(force)
+            resource.save
+        end
+    end
+
+    def get_record_id(force=false)
+        unless force
+            unless self.record_id.nil?
+                return self.record_id
+            end
+        end
+        max = DB[:resources].max(:record_id)
+        return 1 if (max.nil?)
+        resources = DB[:resources]
+        cands = 
+            resources.where(Sequel.negate(ah_id: \
+                self.ah_id)).where(taxonomyid: self.taxonomyid,
+                genome: self.genome, recipe_id: self.recipe_id)
+        for cand in cands
+            input_sources = InputSource.where(resource_id: cand[:id])
+            if input_sources.count == self.input_sources.count
+                if input_sources.map{|i| i.sourceurl} == \
+                  self.input_sources.map{|i| i.sourceurl}
+                    rdatapaths = Rdatapath.where(resource_id: cand[:id])
+                    if rdatapaths.count == self.rdatapaths.count
+                        if rdatapaths.map{|i| i.rdataclass} == \
+                          self.rdatapaths.map{|i| i.rdataclass}
+                            return cand[:record_id]
+                        end
+                    end
+                end
+            end
+        end
+        max = DB[:resources].max(:record_id) # call again just in case
+        if (max.nil?) # should not happen
+            max = 1
+        else
+            max += 1
+        end
+        max
+    end
 
     one_to_many :rdatapaths
     one_to_many :input_sources

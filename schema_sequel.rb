@@ -6,6 +6,12 @@ require 'time'
 
 ## WARNING: THIS DELETES ALL DATA AND RE-CREATES (empty) TABLES!
 
+## WARNING2: IF YOU REALLY WANT TO START OVER, BE SURE YOU 
+## RUN MIGRATIONS AS WELL AFTER RUNNING THIS FILE IN
+## ORDER TO GET ALL SCHEMA CHANGES.
+## (see migrations/001_add_test.rb for instructions)
+
+
 basedir = File.dirname(__FILE__)
 config = YAML.load_file("#{basedir}/config.yml")
 
