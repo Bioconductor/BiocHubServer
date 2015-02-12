@@ -8,17 +8,17 @@ require 'securerandom'
 
 class Resource < Sequel::Model
 
-    # def  validate
-    #     super
-    #     required_fields = [:title, :dataprovider, :species, :taxonomyid,
-    #         :genome, :description, :coordinate_1_based, :maintainer,
-    #         :rdataversion, :rdatadateadded]
-    #     for item in required_fields
-    #         thing = self.send(item)
-    #         errors.add(item, 'cannot be empty') if thing.nil? || 
-    #             (thing.respond_to?(:empty?) && thing.empty?)
-    #     end
-    # end
+    def  validate
+        super
+        required_fields = [:title, :dataprovider, :species, :taxonomyid,
+            :genome, :description, :coordinate_1_based, :maintainer,
+            :rdataversion, :rdatadateadded]
+        for item in required_fields
+            thing = self.send(item)
+            errors.add(item, 'cannot be empty') if thing.nil? || 
+                (thing.respond_to?(:empty?) && thing.empty?)
+        end
+    end
 
     def before_create
         # h = self.to_hash
