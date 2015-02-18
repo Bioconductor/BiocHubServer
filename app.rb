@@ -210,9 +210,9 @@ post '/resource' do
                 for rdatapath in obj["rdatapaths"]
                     rdatapath["resource_id"] = resource.id
                     # fixme - shouldn't need this after a while
-                    if rdatapath.has_key? "derivedmd5"
-                        rdatapath["rdatamd5"] = rdatapath.delete("derivedmd5")
-                    end
+                    # if rdatapath.has_key? "derivedmd5"
+                    #     rdatapath["rdatamd5"] = rdatapath.delete("derivedmd5")
+                    # end
                     Rdatapath.create(rdatapath)
                 end
             end
