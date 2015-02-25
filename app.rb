@@ -192,7 +192,7 @@ post '/resource' do
             end
 
             # fixme - make sure rdatapaths exist and are valid
-            resource.status_id = Status.find(:status => "Unreviewed").id
+            resource.status_id = Status.find(:status => "Public").id
             
             begin
                 resource.save 
@@ -231,6 +231,10 @@ post '/resource' do
                 Biocversion.create(:resource_id => resource.id, 
                     :biocversion => biocversion)
             end
+        end
+
+        if resource.is_duplicate?
+            raise Sequel::Rollback, "This is a duplicate record!"
         end
 
     rescue Exception => ex 

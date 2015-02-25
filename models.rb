@@ -45,6 +45,41 @@ class Resource < Sequel::Model
         true
     end
 
+
+    def is_duplicate?()
+        resources = DB[:resources]
+        auto_cols = [:id, :ah_id, :rdatadateadded, :resource_id]
+        cols_to_compare = resources.columns - auto_cols
+        h = {}
+        for col in cols_to_compare
+            h[col] = self.send(col)
+        end
+        existing = resources.where(Sequel.negate(id: self.id)).where(h)
+        if existing.count == 0
+            return false
+        end
+        dep_tables = []
+        for table in DB.tables
+            dep_tables << table if DB[table].columns.include? :resource_id
+        end
+        for table in dep_tables
+            ds = DB[table]
+            cols_to_compare = ds.columns - auto_cols
+            rows = self.send table
+            for row in rows
+                h = {}
+                for col in cols_to_compare
+                    h[col] = row.send col
+                end
+                existing = resources.where(Sequel.negate(id: row.id)).where(h)
+                if existing.count == 0
+                    return false
+                end
+            end
+        end
+        true
+    end
+
     ## Note: this will (re-)set all record_ids.
     def self.set_record_ids()
         resources = DB[:resources]
@@ -53,7 +88,7 @@ class Resource < Sequel::Model
         Resource.all.each do |resource|
             key = "#{resource.taxonomyid}_#{resource.genome}_#{resource.recipe_id}_"
             key += "#{resource.input_sources.map{|i| i.sourceurl}.join("_")}"
-            key += "#{resource.rdatapaths.map{|i| i.rdataclass}.join("_")}"
+            key += "#{resource.rdatapaths.map{|i| i.preparerclass}.join("_")}"
             h[key] = [] unless h.has_key?(key)
             h[key] << resource.id
         end
@@ -80,7 +115,7 @@ class Resource < Sequel::Model
         cands = 
             resources.where(Sequel.negate(ah_id: \
                 self.ah_id)).where(taxonomyid: self.taxonomyid,
-                genome: self.genome, recipe_id: self.recipe_id)
+                genome: self.genome, preparerclass: self.preparerclass)
         for cand in cands
             input_sources = InputSource.where(resource_id: cand[:id])
             if input_sources.count == self.input_sources.count
