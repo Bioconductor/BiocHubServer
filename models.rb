@@ -12,7 +12,7 @@ class Resource < Sequel::Model
         super
         required_fields = [:title, :dataprovider, :species, :taxonomyid,
             :genome, :description, :coordinate_1_based, :maintainer,
-            :rdatadateadded]
+            :rdatadateadded, :preparerclass]
         for item in required_fields
             thing = self.send(item)
             errors.add(item, 'cannot be empty') if thing.nil? || 
