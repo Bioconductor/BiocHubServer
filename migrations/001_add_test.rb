@@ -6,7 +6,7 @@
 # sequel -m migrations/ sqlite://$(pwd)/annotationhub.sqlite3
 # for mysql do this:
 # sequel -m migrations/ mysql://username:password@host/dbname
-
+# Add -E before the url for more logging/debugging info
 Sequel.migration do
   up do
     # create_table(:test) do
