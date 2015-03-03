@@ -10,8 +10,8 @@ class Resource < Sequel::Model
 
     def  validate
         super
-        required_fields = [:title, :dataprovider, :species, :taxonomyid,
-            :genome, :description, :coordinate_1_based, :maintainer,
+        required_fields = [:title, :dataprovider, 
+            :description, :coordinate_1_based, :maintainer,
             :rdatadateadded, :preparerclass]
         for item in required_fields
             thing = self.send(item)
