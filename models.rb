@@ -86,9 +86,8 @@ class Resource < Sequel::Model
         h = {}
         count = 1
         Resource.all.each do |resource|
-            key = "#{resource.taxonomyid}_#{resource.genome}_#{resource.recipe_id}_"
-            key += "#{resource.input_sources.map{|i| i.sourceurl}.join("_")}"
-            key += "#{resource.rdatapaths.map{|i| i.preparerclass}.join("_")}"
+            key = "#{resource.taxonomyid}_#{resource.genome}_#{resource.preparerclass}"
+            key += "_#{resource.input_sources.map{|i| i.sourceurl}.join("_")}"
             h[key] = [] unless h.has_key?(key)
             h[key] << resource.id
         end
@@ -96,7 +95,7 @@ class Resource < Sequel::Model
             for id in value
                 r = Resource[id]
                 r.record_id = index
-                r.save
+                r.save#(validate: false)
             end
         end
 
