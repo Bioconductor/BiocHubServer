@@ -1,6 +1,6 @@
 require 'sequel'
 require 'yaml'
-require 'logging'
+require 'logger'
 
 unless defined? DB
     basedir = File.dirname(__FILE__)
