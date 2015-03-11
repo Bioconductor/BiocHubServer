@@ -71,7 +71,11 @@ class Resource < Sequel::Model
                 for col in cols_to_compare
                     h[col] = row.send col
                 end
-                existing = resources.where(Sequel.negate(id: row.id)).where(h)
+                if table == :tags
+                    existing = ds.where(h)
+                else
+                    existing = ds.where(Sequel.negate(id: row.id)).where(h)
+                end
                 if existing.count == 0
                     return false
                 end

@@ -1,5 +1,7 @@
 require 'sequel'
 require 'yaml'
+require 'logging'
+
 unless defined? DB
     basedir = File.dirname(__FILE__)
     config = YAML.load_file("#{basedir}/config.yml")
@@ -28,3 +30,4 @@ unless defined? DB
     DB = Sequel.connect(url)
 end
 
+DB.loggers << Logger.new($stdout)
