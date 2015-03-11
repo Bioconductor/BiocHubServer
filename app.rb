@@ -237,6 +237,12 @@ post '/resource' do
             raise Sequel::Rollback, "This is a duplicate record!"
         end
 
+        resource.record_id = resource.get_record_id()
+        if resource.record_id.nil?
+            raise Sequel::Rollback "record_id should not be nil!"
+        end
+        resource.save()
+
     rescue Exception => ex 
         status 500
         return ex.message

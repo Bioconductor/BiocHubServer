@@ -35,15 +35,15 @@ class Resource < Sequel::Model
     end
 
 
-    def after_create
-        super
+    # def after_create
+    #     super
 
-        if self.record_id.nil?
-            self.record_id = self.get_record_id()
-        end
+    #     if self.record_id.nil?
+    #         self.record_id = self.get_record_id()
+    #     end
 
-        true
-    end
+    #     true
+    # end
 
 
     def is_duplicate?()
