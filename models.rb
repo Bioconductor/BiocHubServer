@@ -99,7 +99,7 @@ class Resource < Sequel::Model
             for id in value
                 r = Resource[id]
                 r.record_id = index
-                r.save#(validate: false)
+                r.save(validate: false)
             end
         end
 
