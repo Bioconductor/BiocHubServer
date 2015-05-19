@@ -94,9 +94,15 @@ for more information.
 
 Ruby packages are called gems and `gem` is the program used to install them.
 
-After installing ruby as above, install needed gems as follows:
+The `Gemfile` is like a `DESCRIPTION` file and describes the
+package (gem) dependencies that are needed. this file is used by the
+`bundler` gem. So install bundler:
 
-    gem install --no-ri --no-rdoc sqlite3 sequel mysql sinatra shotgun
+    gem install bundler
+
+And then tell bundler to read the Gemfile and install the packages specified there:
+
+    bundle install
 
 
 #### Running the server
