@@ -6,6 +6,7 @@ require 'date'
 require 'pp'
 require 'json'
 require 'tmpdir'
+require 'socket'
 require_relative './db_init'
 require_relative './logging_init'
 
