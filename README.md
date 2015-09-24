@@ -5,6 +5,12 @@ the ruby version of AnnotationHubServer
 
 ## How to install
 
+Before attempting to install this server, consider
+whether the 
+[Dockerized version](https://github.com/dtenenba/bioc_docker/tree/master/annotationhub)
+would better meet your needs.
+
+
 ### System dependencies
 
 Make sure you have mysql and sqlite3 (with headers) installed. 
