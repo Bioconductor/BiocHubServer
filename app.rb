@@ -31,7 +31,7 @@ helpers do
       basedir = File.dirname(__FILE__)
       config = YAML.load_file("#{basedir}/config.yml")
       @auth ||=  Rack::Auth::Basic::Request.new(request.env)
-      @auth.provided? and @auth.basic? and @auth.credentials and 
+      @auth.provided? and @auth.basic? and @auth.credentials and
         @auth.credentials == ['admin', config['admin_password']]
     end
 
@@ -56,7 +56,7 @@ helpers do
 
 end
 
-get "/" do 
+get "/" do
     erb :index, :locals => {:dbname => config['sqlite_filename']}
 end
 
@@ -194,9 +194,9 @@ post '/resource' do
 
             # fixme - make sure rdatapaths exist and are valid
             resource.status_id = Status.find(:status => "Public").id
-            
+
             begin
-                resource.save 
+                resource.save
             rescue Exception => ex
                 if ex.message == "the before_create hook failed"
                     status "500"
@@ -217,7 +217,7 @@ post '/resource' do
                     Rdatapath.create(rdatapath)
                 end
             end
-            
+
 
             for input_source in obj["input_sources"]
                 input_source["resource_id"] = resource.id
@@ -229,7 +229,7 @@ post '/resource' do
             end
 
             for biocversion in obj["biocversions"]
-                Biocversion.create(:resource_id => resource.id, 
+                Biocversion.create(:resource_id => resource.id,
                     :biocversion => biocversion)
             end
         end
@@ -244,7 +244,7 @@ post '/resource' do
         end
         resource.save()
 
-    rescue Exception => ex 
+    rescue Exception => ex
         status 500
         return ex.message
     end
@@ -264,6 +264,7 @@ get "/metadata/schema_version" do
 end
 
 delete "/resource/:id" do
+    protected!
     r = Resource.find(:id=>params[:id])
     associations = [:rdatapaths, :input_sources, :tags, :biocversions]
     for assoc in associations
@@ -295,7 +296,7 @@ get '/log_fetch' do
     unless prefix == "http://s3.amazonaws.com/annotationhub/"
         # FIXME only do this if we are on production...
         log_request(request, url, rp.id, resource.id)
-    end        
+    end
     url
 end
 
@@ -308,18 +309,18 @@ get '/fetch/:id' do
     unless prefix == "http://s3.amazonaws.com/annotationhub/"
         # FIXME only do this if we are on production...
         log_request(request, url, rp.id, resource.id)
-    end        
+    end
     redirect url
 end
 
 
 __END__
 
-get "/dump_schema" do 
+get "/dump_schema" do
 end
 
-post "/new_resource" do 
-    # is it a valid object? 
+post "/new_resource" do
+    # is it a valid object?
         # add it to database
     # else
         # error
