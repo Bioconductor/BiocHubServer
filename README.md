@@ -69,31 +69,30 @@ you should never need to become root or fiddle with permissions.
     #=> "rbenv is a function"
     ~~~
 
-5.  Install
-[ruby-build](https://github.com/sstephenson/ruby-build),
-which provides the
-`rbenv install` command that simplifies the process of
-installing new Ruby versions:
+5.  Install [ruby-build](https://github.com/sstephenson/ruby-build),
+    which provides the `rbenv install` command that simplifies the
+    process of installing new Ruby versions:
 
-git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
+        git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 
-Now you need to install ruby. Go to the 
-[Ruby Downloads Page](https://www.ruby-lang.org/en/downloads/)
-to find out what the current stable version is. As of 3/30/2014 it is
-2.1.1 so I will use that in further examples, but substitute the current
-stable version for 2.1.1 in what follows.
+    Now you need to install ruby. Go to the
+    [Ruby Downloads Page](https://www.ruby-lang.org/en/downloads/) to
+    find out what the current stable version is. As of 3/30/2014 it is
+    2.1.1 so I will use that in further examples, but substitute the
+    current stable version for 2.1.1 in what follows.
 
-To install this version of ruby in rbenv, type
+    To install this version of ruby in rbenv, type
 
-    rbenv install 2.1.1
+        rbenv install 2.1.1
 
-Then, to make this the only version of ruby that you will use, type:
+    Then, to make this the only version of ruby that you will use, type:
 
-    rbenv global 2.1.1
+        rbenv global 2.1.1
 
-If you want to use different versions of ruby in different contexts, read the
-[rbenv page](https://github.com/sstephenson/rbenv)
-for more information.
+    If you want to use different versions of ruby in different
+    contexts, read the
+    [rbenv page](https://github.com/sstephenson/rbenv) for more
+    information.
 
 
 #### Installing Necessary Ruby Packages
