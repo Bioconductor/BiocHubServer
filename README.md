@@ -75,7 +75,7 @@ you should never need to become root or fiddle with permissions.
 
         git clone https://github.com/sstephenson/ruby-build.git ~/.rbenv/plugins/ruby-build
 
-    Now you need to install ruby. Go to the
+6.  Now you need to install ruby. Go to the
     [Ruby Downloads Page](https://www.ruby-lang.org/en/downloads/) to
     find out what the current stable version is. As of 3/30/2014 it is
     2.1.1 so I will use that in further examples, but substitute the
