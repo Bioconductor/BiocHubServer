@@ -148,10 +148,24 @@ as we have a mysql and sqlite3 database. The Hub functions require a `sqlite3`
 database so users opting for the `mysql` option should periodically run
 convert_db.rb to sync a mysql and sqlite database. The `dbname` is the name you
 would like to call your database and sqlite_filename is the dbname with a
-.sqlite3 extensions. 
+.sqlite3 extensions. For users opting to use `mysql` a `mysql_url` is also needed. 
+An example minimal config.yml using `mysql` is as follows:
+
+```
+dbname: "mydatabase"
+dbtype: "mysql"
+sqlite_filename: "mydatabase.sqlite3"
+mysql: mysql2://lori:supersecretpw@localhost/mydatabase  
+	# a user (lori) and password (supersecretpw) with access to your database (mydatabase)
+
+```
+
+
 
 ### Create your database
 
+
+### Using sqlite
 This will create an empty database for utilization.  If this is run, whatever
 the name of the database in the config.yml, if it already exists is destroyed
 and an empty database will remain. 
@@ -167,6 +181,43 @@ migration will also need to be run
 sequel -m migrations/ sqlite:///<Full local path to sqlite3 database>/mydatabase.sqlite3
 
 ```
+
+### Using mysql
+
+The `mysql` approach assumes the user has created the empty database in `mysql` and
+have some users with necessary permissions. 
+
+```
+# Log into mysql
+mysql -u root -p
+
+#create the database
+CREATE DATABASE mydatabase;
+
+# create any needed users with needed permission
+CREATE USER lori;
+GRANT ALL PRIVILEGES ON *.* TO 'lori'@'localhost' IDENTIFIED BY 'supersecretpw';
+
+# exit out of mysql
+exit
+```
+
+Now we initial the `mysql` database with schema and perform the migration
+
+```
+ruby schema_sequel.rb
+sequel -m migrations/ mysql2://lori:supersecretpw@localhost/mydatabase
+```
+
+The tricky part with using `mysql` is the current R frontend expects a sqlite3 database.
+The following will convert the `mysql` database to a sqlite3 database. 
+
+```
+ruby convert_db.rb
+```
+Any time the `mysql` database is updated (resources added), this `ruby convert_db.rb` MUST be 
+run or the changes will not propagate. 
+
 
 
 ### Start your server
@@ -263,6 +314,9 @@ pushMetadata(meta[[1]], url)
 # The data is now added
 # If you had your hub resource loaded as described in the previous section you
 # could reload and see the newly added resource
+
+# note: if you were using mysql `ruby convert_db.rb` will need to be run before 
+# you will see the new resources
 
 hub <- LocalHub()
 hub
