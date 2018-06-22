@@ -3,6 +3,7 @@ require 'sequel'
 require 'fileutils'
 require 'yaml'
 require 'time'
+require 'mysql2'
 
 ## WARNING: THIS DELETES ALL DATA AND RE-CREATES (empty) TABLES!
 
@@ -15,13 +16,13 @@ require 'time'
 basedir = File.dirname(__FILE__)
 config = YAML.load_file("#{basedir}/config.yml")
 
-if ENV['AHS_DATABASE_TYPE'] == 'mysql'
+if config['dbtype'] == 'mysql'
     dbname = config['mysql_url'].split('/').last
     _DB = Sequel.connect(config['mysql_url']) 
     _DB.run "drop database if exists #{dbname};"
     _DB.run "create database #{dbname};"
     _DB.run "use #{dbname};"
-elsif ENV['AHS_DATABASE_TYPE'] == 'sqlite'
+elsif config['dbtype'] == 'sqlite'
     dbfile = "#{basedir}/#{config['sqlite_filename']}"
     if File.exists? dbfile
         FileUtils.rm dbfile
@@ -123,7 +124,7 @@ for table in DB.tables
     next if table == :timestamp
     for op in ['insert', 'update', 'delete']
         trigger = nil
-        if ENV['AHS_DATABASE_TYPE'] == 'sqlite'
+        if config['dbtype'] == 'sqlite'
             trigger=<<-"EOT"
                  create trigger #{table}_#{op} after #{op} on #{table} 
                    begin
@@ -131,7 +132,7 @@ for table in DB.tables
                      = datetime('now', 'localtime');
                    end;
             EOT
-        elsif ENV['AHS_DATABASE_TYPE'] == 'mysql'
+        elsif config['dbtype'] == 'mysql'
             trigger=<<-"EOT"
                 create trigger #{table}_#{op} after #{op}
                   on #{table} for each row 

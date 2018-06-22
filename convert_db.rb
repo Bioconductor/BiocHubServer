@@ -2,7 +2,7 @@
 # Run me via cron.
 
 
-ENV['AHS_DATABASE_TYPE'] = 'mysql'
+#ENV['AHS_DATABASE_TYPE'] = 'mysql'
 
 require './db_init.rb'
 require 'fileutils'
@@ -17,10 +17,10 @@ cachefile = "#{@basedir}/dbtimestamp.cache"
 
 @config = YAML.load_file("#{@basedir}/config.yml")
 
-url2 = @config['mysql_url'].sub("annotationhub", "information_schema")
+url2 = @config['mysql_url'].sub(@config['dbname'], "information_schema")
 DB2 = Sequel.connect(url2)
 
-table_created_at = DB2[:tables].where(:table_schema => 'annotationhub').max(:create_time)
+table_created_at = DB2[:tables].where(:table_schema => @config['dbname']).max(:create_time)
 
 
 def convert_db()

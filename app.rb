@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 
 require 'sinatra'
-require 'mysql'
+require 'mysql2'
 require 'date'
 require 'pp'
 require 'json'
@@ -118,7 +118,7 @@ end
 
 
 get "/metadata/#{config['sqlite_filename']}" do
-    if ENV['AHS_DATABASE_TYPE'] == "sqlite"
+    if config['dbtype'] == "sqlite"
         send_file "#{basedir}/#{config['sqlite_filename']}",
             :filename => config['sqlite_filename']
     else

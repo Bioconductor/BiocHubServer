@@ -6,18 +6,17 @@ unless defined? DB
     basedir = File.dirname(__FILE__)
     config = YAML.load_file("#{basedir}/config.yml")
 
-    if `hostname` =~ /^ip-/ and ENV['AHS_DATABASE_TYPE'].nil?
-        ENV['AHS_DATABASE_TYPE']='mysql'
+    if `hostname` =~ /^ip-/ and config['dbtype'].nil?
+        config['dbtype']='mysql'
     end
 
     mode = nil
-    if ENV['AHS_DATABASE_TYPE'].nil? or 
-      !(["mysql", "sqlite"].include? ENV['AHS_DATABASE_TYPE'])
-        puts "environment variable AHS_DATABASE_TYPE must be set to"
-        puts "mysql or sqlite."
+    if config['dbtype'].nil? or
+      !(["mysql", "sqlite"].include? config['dbtype'])
+        puts "dbtype must be set to mysql or sqlite in config.yml."
         exit
     else
-        mode = ENV['AHS_DATABASE_TYPE'].to_sym
+        mode = config['dbtype'].to_sym
     end
 
     url = nil
