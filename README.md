@@ -211,8 +211,9 @@ library(AnnotationHub)
 setClass("mydatabase", contains = "Hub")
 LocalHub <- function(...,
 	 hub="http://127.0.0.1:9393",
-	 cache="/home/lori/.MyBiocHub",
-	 proxy=NULL,){
+	 cache="/home/lori/.MyBiocHub",  # where resources are downloaded/cached
+	 proxy=NULL,
+	 localHub=FALSE){
 	 .Hub("mydatabase", hub, cache, proxy, localHub, ...)
 }
 hub <- LocalHub()
