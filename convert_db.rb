@@ -25,7 +25,7 @@ table_created_at = DB2[:tables].where(:table_schema => @config['dbname']).max(:c
 
 def convert_db()
     mysql2_url = @config['mysql_url'].sub(/^mysql:/, "mysql2:")
-    outfile = "#{@basedir}/#{@config['sqlite_filename']}"
+    outfile = "#{@basedir}/#{@config['dbname']}.sqlite3"
     outfile_tmp = outfile + "_tmp"
     FileUtils.rm_rf outfile_tmp
     res = `sequel #{mysql2_url} -C sqlite://#{outfile_tmp}`

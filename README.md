@@ -142,21 +142,18 @@ are:
 ```
 dbname: "mydatabase"
 dbtype: "sqlite"
-sqlite_filename: "mydatabase.sqlite3"
 ```
 The `dbtype` allows for only `sqlite` or `mysql`.  We recommend users use
 `sqlite`. The `mysql` is really implemented for the Bioconductor specific Hubs
 as we have a mysql and sqlite3 database. The Hub functions require a `sqlite3`
 database so users opting for the `mysql` option should periodically run
 convert_db.rb to sync a mysql and sqlite database. The `dbname` is the name you
-would like to call your database and sqlite_filename is the dbname with a
-.sqlite3 extensions. For users opting to use `mysql` a `mysql_url` is also needed. 
-An example minimal config.yml using `mysql` is as follows:
+would like to call your database. For users opting to use `mysql` a `mysql_url`
+is also needed. An example minimal config.yml using `mysql` is as follows:
 
 ```
 dbname: "mydatabase"
 dbtype: "mysql"
-sqlite_filename: "mydatabase.sqlite3"
 mysql: mysql2://lori:supersecretpw@localhost/mydatabase  
 	# a user (lori) and password (supersecretpw) with access to your database (mydatabase)
 

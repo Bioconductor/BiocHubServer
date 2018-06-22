@@ -23,7 +23,7 @@ unless defined? DB
     if mode == :mysql
         url = config['mysql_url']
     else
-        url = "sqlite://#{basedir}/#{config['sqlite_filename']}"
+        url = "sqlite://#{basedir}/#{config['dbname']}.sqlite3"
     end
 
     DB = Sequel.connect(url)

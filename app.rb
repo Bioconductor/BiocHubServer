@@ -18,6 +18,8 @@ basedir = File.dirname(__FILE__)
 config = YAML.load_file("#{basedir}/config.yml")
 @config = config
 
+sqlite_filename = "#{config['dbname']}.sqlite3"
+
 helpers do
     def protected!
         # ignore auth unless we are on production
@@ -57,7 +59,7 @@ helpers do
 end
 
 get "/" do
-    erb :index, :locals => {:dbname => config['sqlite_filename']}
+    erb :index, :locals => {:dbname => "#{sqlite_filename}"}
 end
 
 get "/newerthan/:date"  do
@@ -117,12 +119,12 @@ get "/id/:id" do
 end
 
 
-get "/metadata/#{config['sqlite_filename']}" do
+get "/metadata/#{sqlite_filename}" do
     if config['dbtype'] == "sqlite"
-        send_file "#{basedir}/#{config['sqlite_filename']}",
-            :filename => config['sqlite_filename']
+        send_file "#{basedir}/#{sqlite_filename}",
+            :filename => "#{sqlite_filename}"
     else
-        send_file "#{basedir}/#{config['sqlite_filename']}"
+        send_file "#{basedir}/#{sqlite_filename}"
     end
 end
 

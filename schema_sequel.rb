@@ -23,7 +23,7 @@ if config['dbtype'] == 'mysql'
     _DB.run "create database #{dbname};"
     _DB.run "use #{dbname};"
 elsif config['dbtype'] == 'sqlite'
-    dbfile = "#{basedir}/#{config['sqlite_filename']}"
+    dbfile = "#{basedir}/#{config['dbname']}.sqlite3"
     if File.exists? dbfile
         FileUtils.rm dbfile
     end
