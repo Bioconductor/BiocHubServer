@@ -17,11 +17,11 @@ and added utilizing the R Hub interface provided through AnnotationHub.
     
 Via SSH:
 
-    `git clone git@github.com:Bioconductor/AnnotationHubServer3.0.git`
+    git clone git@github.com:Bioconductor/BioconductorHubServer.git
 
 Via Http:
 
-    `git clone https://github.com/Bioconductor/AnnotationHubServer3.0.git`
+    git clone https://github.com/Bioconductor/BioconductorHubServer.git
 
 ### Installing System Dependencies
 
