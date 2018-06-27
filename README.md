@@ -31,11 +31,11 @@ Pick a database backend:
 
 Via SSH:
 
-    git clone git@github.com:Bioconductor/BioconductorHubServer.git
+    git clone git@github.com:Bioconductor/BiocHubServer.git
 
 Via Http:
 
-    git clone https://github.com/Bioconductor/BioconductorHubServer.git
+    git clone https://github.com/Bioconductor/BiocHubServer.git
 
 #### Installing System Dependencies
 
