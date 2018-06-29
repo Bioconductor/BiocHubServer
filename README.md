@@ -150,9 +150,10 @@ hub[[1]]
 #### Adding Resources Hub
 
 Adding Resources to the Hub is accomplished through infastructure in
-[AnnotationHubData][].
+[AnnotationHubData][] or [ExperimentHubData][].
 
 [AnnotationHubData]: https://bioconductor.org/packages/AnnotationHubData/
+[ExperimentHubData]: https://bioconductor.org/packages/ExperimentHubData/
 [Creating AnnotationHub Package]: http://bioconductor.org/packages/release/bioc/vignettes/AnnotationHub/inst/doc/CreateAnAnnotationPackage.html
 [Creating ExperimentHub Package]: https://bioconductor.org/packages/release/bioc/vignettes/ExperimentHub/inst/doc/CreateAnExperimentHubPackage.html
 
@@ -163,10 +164,10 @@ DESCRIPTION and metadata.csv files as described in [Creating AnnotationHub Packa
 Remember the server must be running!
 
 ```
-library(AnnotationHubData)
+library(AnnotationHubData)  # or library(ExperimentHubData)
 options(AH_SERVER_POST_URL="http://127.0.0.1:9393/resource")
 options(ANNOTATION_HUB_URL="http://127.0.0.1:9393")
-# run the appropriate makeMetadata function
+# run the appropriate makeMetadata function (makeExperimentHubMetadata for Experiment Hub Like Packages)
 meta = makeAnnotationHubMetadata("<Path to Annotation Hub Like Package>")
 url <- getOption("AH_SERVER_POST_URL")
 pushMetadata(meta[[1]], url)
@@ -188,11 +189,11 @@ hub
 
 Via SSH:
 
-    git clone git@github.com:Bioconductor/BioconductorHubServer.git
+    git clone git@github.com:Bioconductor/BiocHubServer.git
 
 Via Http:
 
-    git clone https://github.com/Bioconductor/BioconductorHubServer.git
+    git clone https://github.com/Bioconductor/BiocHubServer.git
 
 #### Installing System Dependencies
 
@@ -333,7 +334,7 @@ hub[[1]]
 #### Adding Resources Hub
 
 Adding Resources to the Hub is accomplished through infastructure in
-[AnnotationHubData][].
+[AnnotationHubData][] or [ExperimentHubData][].
 
 There are a number of built in on the fly applications for adding resources but
 they best know and well documented way is to set up a package like structure with the required
@@ -342,10 +343,10 @@ DESCRIPTION and metadata.csv files as described in [Creating AnnotationHub Packa
 Remember the server must be running!
 
 ```
-library(AnnotationHubData)
+library(AnnotationHubData)  # or library(ExperimentHubDatat)
 options(AH_SERVER_POST_URL="http://127.0.0.1:9393/resource")
 options(ANNOTATION_HUB_URL="http://127.0.0.1:9393")
-# run the appropriate makeMetadata function
+# run the appropriate makeMetadata function  (makeExperimentHubMetdata for Experiment Hub Like Packages)
 meta = makeAnnotationHubMetadata("<Path to Annotation Hub Like Package>")
 url <- getOption("AH_SERVER_POST_URL")
 pushMetadata(meta[[1]], url)
