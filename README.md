@@ -474,14 +474,16 @@ Gemfile.
 **NOTE:** If you are only using sqlite3, open the Gemfile and comment
 out the line `gem "mysql2"`; it should read `#gem "mysql2"`.
 
+**NOTE:** The provided Gemfile.lock contains the versions of modules that were
+loaded when testing. To use the most updated versions of gems, remove the
+Gemfile.lock. If you are using sqlite3 only, you will have to remove the mysql2 
+entries from this file.
+
+
 Tell bundler to read the Gemfile and install the packages specified there:
 
     bundle install
 
-
-**NOTE:** The provided Gemfile.lock contains the versions of modules that were
-loaded when testing. To use the most updated versions of gems, remove the
-Gemfile.lock and run `bundle install` again.
 
 * [Back to sqlite instructions](#sqlitecont)
 * [Back to mysql instructions](#mysqlcont)
