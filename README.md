@@ -43,9 +43,11 @@ Via Http:
 
     sudo apt-get install libsqlite3
 
-2. Install Ruby and the needed libraries
+2. Install Ruby and the needed libraries (**IMPORTANT!!! follow link below**)
 
 * [Install ruby and needed libraries](#ruby)
+
+  Do not move foward until following the instructions at the link above!
 
 <a name="sqlitecont"></a>
 
@@ -61,7 +63,9 @@ dbname: "mydatabase"
 dbtype: "sqlite"
 ```
 The `dbtype` should always be `sqlite` when using a sqlite3 database backend.
-The `dbname` is the name you will call your database.
+The `dbname` is the name you will call your database. If copying the
+config.yml.example file provided please remove the mysql specific entries!
+The file should only contain dbname and dbtype.
 
 
 #### Create your database
@@ -85,6 +89,7 @@ sequel -m migrations/ sqlite:///<Full local path to sqlite3 database>/mydatabase
 
 #### Start your server
 
+Please open the app.rb file and comment out the line `require 'mysql2'` so it reads `#require 'mysql2`.
 Now `cd` to the same directory as this README and do:
 
     shotgun app.rb
@@ -197,14 +202,17 @@ Via Http:
 
 #### Installing System Dependencies
 
-Make sure you have mysql and sqlite3 (with headers) installed.
+1. Make sure you have mysql and sqlite3 (with headers) installed.
 
     sudo apt-get install libsqlite3 mysql-server libmysqlclient
 
 
-Install Ruby and the needed libraries
+2. Install Ruby and the needed libraries (**IMPORTANT!!! follow link below**)
 
 * [Install ruby and needed libraries](#ruby)
+
+  Do not move foward until following the instructions at the link above!
+
 
 <a name="mysqlcont"></a>
 

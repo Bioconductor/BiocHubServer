@@ -5,7 +5,8 @@ dbtype: "sqlite"  #sqlite or mysql
 # the above entries are all that are require for a local database
 # the following are included as Bioconductor has a mirrored mysql database
 # a user may have both but a sqlite3 file will be required for use with Hub
-# functions -  If maintaining both locally see convert_db.rb
+# functions -  If maintaining both locally see convert_db.rb.
+# Remove the following entries if only using sqlite3
 mysql_url: "mysql://user:password@host/dbname"
 admin_password: "some_password"
 logging_url: "mysql://username:password@host/logging_database_name"
