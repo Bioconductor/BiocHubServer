@@ -3,7 +3,7 @@ require 'sequel'
 require 'fileutils'
 require 'yaml'
 require 'time'
-require 'mysql2'
+#require 'mysql2'
 
 ## WARNING: THIS DELETES ALL DATA AND RE-CREATES (empty) TABLES!
 

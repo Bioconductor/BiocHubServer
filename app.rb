@@ -138,7 +138,9 @@ get "/newerthan/:date"  do
     out.to_json
 end
 
-get "/package/:pkg"  do
+# accurate for ExperimentHub but not AnnotationHub
+# next version should have this as separate database field
+get "/package2/:pkg"  do
     content_type "text/plain"
     r = Resource.filter(:preparerclass => params[:pkg]).all
     out = []
@@ -154,16 +156,20 @@ get "/package/:pkg"  do
     out.to_json
 end
 
-get "/title/:ttl"  do
+get "/package/:pkg" do
     content_type "text/plain"
-    vl = params[:ttl]
-    vl.gsub!(" ", "%")
-    r = Resource.where(Sequel.ilike(:title, "%#{vl}%")).all
+    vl = params[:pkg]
+    r = Rdatapath.where(Sequel.ilike(:rdatapath, "%#{vl}%")).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
     out = []
     for row in r
         v = row.values
         v2 = {}
-        v2[:id] = v[:id]
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
@@ -172,16 +178,71 @@ get "/title/:ttl"  do
     out.to_json
 end
 
-get "/description/:desc"  do
+get "/title/:ttl"  do
     content_type "text/plain"
-    vl = params[:desc]
-    vl.gsub!(" ", "%")
-    r = Resource.where(Sequel.ilike(:description, "%#{vl}%")).all
+    vl = params[:ttl]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Resource.where(Sequel.ilike(:title, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:id]
+    end
+
+    if vls.length > 0
+        vls.each do |s|
+            r = Resource.where(Sequel.ilike(:title, ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
     out = []
     for row in r
         v = row.values
         v2 = {}
-        v2[:id] = v[:id]
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+
+get "/description/:desc"  do
+    content_type "text/plain"
+    vl = params[:desc]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Resource.where(Sequel.ilike(:description, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:id]
+    end
+
+    if vls.length > 0
+        vls.each do |s|
+            r = Resource.where(Sequel.ilike(:description, ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
