@@ -121,6 +121,34 @@ get "/id/:id" do
     JSON.pretty_generate h
 end
 
+get "/ahid/:id" do
+    content_type "text/plain"
+    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
+    id = params[:id]
+    if (id[0..1].upcase.start_with?("AH"))
+        id = id.sub(/^../, "AH")
+    elsif
+        id = "AH" + id
+    end
+    r = Resource.filter(:ah_id => "#{id}").eager(associations).all.first
+    h = r.to_hash
+    location_prefix = r.location_prefix
+    h.delete :location_prefix_id
+    h[:location_prefix] = location_prefix[:location_prefix]
+    recipe = r.recipe
+    h[:recipe] = recipe[:recipe]
+    h[:recipe_package] = recipe[:package]
+    h.delete :id
+    h.delete :status_id
+    h.delete :recipe_id
+    for association in associations
+        h[association] = clean_hash(r.send(association.to_s))
+    end
+    h[:tags] = h[:tags].map{|i|i[:tag]}
+    h[:biocversions] = h[:biocversions].map{|i|i[:biocversion]}
+    JSON.pretty_generate h
+end
+
 get "/newerthan/:date"  do
     # a date in the format 2014-04-01
     pd = params[:date]
@@ -250,6 +278,37 @@ get "/description/:desc"  do
     end
     out.to_json
 end
+
+get "/dataprovider"  do
+    content_type "text/plain"
+    r = Resource.select(:dataprovider).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:dataprovider]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/dataprovider/:dp"  do
+    content_type "text/plain"
+    vl = params[:dp]
+    r = Resource.where(Sequel.ilike(:dataprovider, "%#{vl}%")).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        v2[:dataprovider] = v[:dataprovider]
+        out.push v2
+    end
+    out.to_json
+end
+
+
+
 
 get '/fetch/:id' do
     rp = Rdatapath.find(:id=>params[:id])

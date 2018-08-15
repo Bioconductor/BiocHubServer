@@ -10,12 +10,14 @@ GET:
 /metadata/database_timestamp
 /metadata/highest_id
 /id/:id
+/ahid/:id
 /newerthan/:date     # date in format 2018-08-12
 /package/:pkg        # uses rdatapath
 /package2/:pkg       # uses preparerclass (accurate for ExperimentHub)
 /title/:ttl          # can be any number of terms seperate with space
 /description/:desc   # can be any number of terms seperate with space
-
+/dataprovider        # lists possible dataproviders
+/dataprovider/:dp
 
 /fetch/:id # id => rdatapaths.id
 
