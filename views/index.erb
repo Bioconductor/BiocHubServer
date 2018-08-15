@@ -5,9 +5,16 @@
 <body>
     <pre>
 GET:
-/metadata/schema_version
-/metadata/highest_id
 /metadata/<%=dbname%>
+/metadata/schema_version
+/metadata/database_timestamp
+/metadata/highest_id
+/id/:id
+/newerthan/:date     # date in format 2018-08-12
+/package/:pkg
+/title/:ttl   # can be any number of terms seperate with space
+/description/:desc   # can be any number of terms seperate with space
+
 
 /fetch/:id # id => rdatapaths.id
 

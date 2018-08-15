@@ -58,34 +58,6 @@ helpers do
 
 end
 
-get "/" do
-    erb :index, :locals => {:dbname => "#{sqlite_filename}"}
-end
-
-get "/newerthan/:date"  do
-    # a date in the format 2014-04-01
-    pd = params[:date]
-    d = DateTime.strptime(pd, "%Y-%m-%d")
-    r = Resource.filter{rdatadateadded >  d}.all #select(:resource_id).all
-    #require 'pry'; binding.pry
-    # ids = x.map{|i| i.resource_id }
-    # r = Resource.filter(:id => ids).eager(:rdatapaths,
-    #     :input_sources, :tags, :biocversions, :recipes).all
-    out = []
-    for row in r
-        v = row.values
-        v[:description] = v[:description].force_encoding("utf-8")
-        v[:rdatapaths] = get_value row.rdatapaths
-        v[:input_sources] = get_value row.input_sources
-        v[:tags] = get_value row.tags
-        v[:biocversions] = get_value row.biocversions
-        #FIXME v[:recipes] = get_value row.recipes
-        out.push v
-        v.to_json
-    end
-    out.to_json
-end
-
 def clean_hash(arr)
     arr = arr.map{|i|i.to_hash}
     for item in arr
@@ -93,6 +65,37 @@ def clean_hash(arr)
         item.delete :resource_id
     end
     arr
+end
+
+get "/" do
+    erb :index, :locals => {:dbname => "#{sqlite_filename}"}
+end
+
+get "/metadata/#{sqlite_filename}" do
+    if config['dbtype'] == "sqlite"
+        send_file "#{basedir}/#{sqlite_filename}",
+            :filename => "#{sqlite_filename}"
+    else
+        send_file "#{basedir}/#{sqlite_filename}"
+    end
+end
+
+get "/metadata/schema_version" do
+    if DB.table_exists? :schema_info
+        DB[:schema_info].first[:version].to_s
+    else
+        "0"
+    end
+end
+
+get '/metadata/database_timestamp' do
+    content_type "text/plain"
+    DB[:timestamp].first[:timestamp].to_s
+end
+
+get '/metadata/highest_id' do
+    content_type "text/plain"
+    DB[:resources].max(:id).to_s
 end
 
 get "/id/:id" do
@@ -118,24 +121,86 @@ get "/id/:id" do
     JSON.pretty_generate h
 end
 
-
-get "/metadata/#{sqlite_filename}" do
-    if config['dbtype'] == "sqlite"
-        send_file "#{basedir}/#{sqlite_filename}",
-            :filename => "#{sqlite_filename}"
-    else
-        send_file "#{basedir}/#{sqlite_filename}"
+get "/newerthan/:date"  do
+    # a date in the format 2014-04-01
+    pd = params[:date]
+    d = DateTime.strptime(pd, "%Y-%m-%d")
+    r = Resource.filter{rdatadateadded >  d}.all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
     end
+    out.to_json
 end
 
-get '/metadata/database_timestamp' do
+get "/package/:pkg"  do
     content_type "text/plain"
-    DB[:timestamp].first[:timestamp].to_s
+    r = Resource.filter(:preparerclass => params[:pkg]).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:id] = v[:id]
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
 end
 
-get '/metadata/highest_id' do
+get "/title/:ttl"  do
     content_type "text/plain"
-    DB[:resources].max(:id).to_s
+    vl = params[:ttl]
+    vl.gsub!(" ", "%")
+    r = Resource.where(Sequel.ilike(:title, "%#{vl}%")).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:id] = v[:id]
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/description/:desc"  do
+    content_type "text/plain"
+    vl = params[:desc]
+    vl.gsub!(" ", "%")
+    r = Resource.where(Sequel.ilike(:description, "%#{vl}%")).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:id] = v[:id]
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+get '/fetch/:id' do
+    rp = Rdatapath.find(:id=>params[:id])
+    path = rp.rdatapath
+    resource = rp.resource
+    prefix = resource.location_prefix.location_prefix
+    url = prefix + path
+    unless prefix == "http://s3.amazonaws.com/annotationhub/"
+        # FIXME only do this if we are on production...
+        log_request(request, url, rp.id, resource.id)
+    end
+    redirect url
 end
 
 post '/resource' do
@@ -253,18 +318,6 @@ post '/resource' do
     "ok, resource id is #{resource.id}"
 end
 
-get '/test' do
-    redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
-end
-
-get "/metadata/schema_version" do
-    if DB.table_exists? :schema_info
-        DB[:schema_info].first[:version].to_s
-    else
-        "0"
-    end
-end
-
 delete "/resource/:id" do
     protected!
     r = Resource.find(:id=>params[:id])
@@ -277,17 +330,6 @@ delete "/resource/:id" do
     status 200
     "OK"
 end
-
-# delete "/resource/:id" do
-#     protected!
-#     r = Resource.find(:id=>params[:id])
-#     r.rdatadateremoved = Date.today
-#     r.save
-#     status 200
-#     content_type "text/plain"
-#     "OK"
-# end
-
 
 get '/log_fetch' do
     rp = Rdatapath.find(:id=>params[:id])
@@ -302,28 +344,8 @@ get '/log_fetch' do
     url
 end
 
-get '/fetch/:id' do
-    rp = Rdatapath.find(:id=>params[:id])
-    path = rp.rdatapath
-    resource = rp.resource
-    prefix = resource.location_prefix.location_prefix
-    url = prefix + path
-    unless prefix == "http://s3.amazonaws.com/annotationhub/"
-        # FIXME only do this if we are on production...
-        log_request(request, url, rp.id, resource.id)
-    end
-    redirect url
+get '/test' do
+    redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
 end
-
 
 __END__
-
-get "/dump_schema" do
-end
-
-post "/new_resource" do
-    # is it a valid object?
-        # add it to database
-    # else
-        # error
-end
