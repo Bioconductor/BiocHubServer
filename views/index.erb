@@ -11,6 +11,7 @@ GET:
 /metadata/highest_id
 /id/:id
 /ahid/:id
+/recordstatus/:id    # public or removed
 /newerthan/:date     # date in format 2018-08-12
 /package/:pkg        # uses rdatapath
 /package2/:pkg       # uses preparerclass (accurate for ExperimentHub)
@@ -32,6 +33,10 @@ GET:
 /sourceversion
 /sourceversion/:srcv
 /sourceurl/:src
+/searchcol
+/query/:qry          # format:  /query/genome(hg38) description(splicing events, junctions)
+		     # /query/species(Aspergillus sydowii) rdataclass(GRanges) sourceurl(Fungi, release-33)
+		     # All queries are AND
 
 /fetch/:id # id => rdatapaths.id
 

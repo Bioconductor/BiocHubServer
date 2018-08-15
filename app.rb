@@ -561,6 +561,179 @@ get "/sourceurl/:srcurl" do
     out.to_json
 end
 
+get '/recordstatus/:id' do
+    content_type "text/plain"
+    r = Resource.filter(:id => params[:id]).all.first[:status_id]
+    JSON.pretty_generate DB[:statuses].filter(:id => r).all.first[:status]
+end
+
+def getcols()
+    cols = ["title", "dataprovider", "species", "taxonomyid", "genome",
+            "description", "newerthan", "rdataclass", "sourceurl",
+            "sourceversion", "sourcetype"]
+    cols
+end
+
+def whichtable(vl)
+    h = {}
+    h[:title] = "Resource"
+    h[:dataprovider] = "Resource"
+    h[:species] = "Resource"
+    h[:taxonomyid] = "Resource"
+    h[:genome] = "Resource"
+    h[:description] = "Resource"
+    h[:newerthan] = "Resource"
+    h[:rdataclass] = "Rdatapath"
+    h[:sourceurl ] = "InputSource"
+    h[:sourceversion] = "InputSource"
+    h[:sourcetype] = "InputSource"
+    h[:"#{vl}"]
+end
+
+get '/searchcol' do
+    #cols = Resource.columns + Rdatapath.columns + InputSource.columns
+    cols = getcols()
+    JSON.pretty_generate cols.uniq
+end
+
+get '/query/:qry' do
+    content_type "text/plain"
+    qry = params[:qry]
+    out = []
+    qry.split(/[()]+/).each do |v|
+        out.push v.strip
+    end
+    vls = out.select.with_index { |_, i| i.odd? }
+    keys = out.select.with_index { |_, i| i.even? }
+    invalid = keys - getcols()
+    allidx = []
+    if invalid.length > 0
+        "Invalid search columns: " + invalid.to_s
+    else
+         method = whichtable(keys[0])
+         case method
+         when "Resource"
+             idx = matchResource(keys[0], vls[0])
+         when "InputSource"
+             idx = matchInput(keys[0], vls[0])
+         when "Rdatapath"
+             idx = matchRdatapath(keys[0], vls[0])
+         else
+         end
+         allidx = idx
+
+         dx = 1
+         while dx < keys.length
+             method = whichtable(keys[dx])
+             case method
+             when "Resource"
+                 idx = matchResource(keys[dx], vls[dx])
+             when "InputSource"
+                 idx = matchInput(keys[dx], vls[dx])
+             when "Rdatapath"
+                 idx = matchRdatapath(keys[dx], vls[dx])
+             else
+             end
+             allidx = allidx & idx
+             dx  = dx + 1
+         end
+         r = Resource.where(id: allidx).all
+         out = []
+         for row in r
+             v = row.values
+             v2 = {}
+             v2[:ah_id] = v[:ah_id]
+             v2[:title] = v[:title]
+             v2[:description] = v[:description].force_encoding("utf-8")
+             out.push v2
+        end
+        out.to_json
+    end
+end
+
+
+
+def matchResource(column, vl)
+     vls = vl.split(",").collect{|v| v.strip || v}
+     out = []
+     e1 = vls.shift
+     if column == "newerthan"
+         d = DateTime.strptime(e1, "%Y-%m-%d")
+         r = Resource.filter{rdatadateadded >  d}.all
+         for row in r
+              v = row.values
+              out.push v[:id]
+         end
+     else
+         r = Resource.where(Sequel.ilike(:"#{column}", ("%" + e1 + "%"))).all
+         for row in r
+             v = row.values
+             out.push v[:id]
+         end
+         if vls.length > 0
+             vls.each do |s|
+                 r = Resource.where(Sequel.ilike(:"#{column}", ("%" + s + "%"))).all
+                 find = []
+                 for row in r
+                     v = row.values
+                     find.push v[:id]
+                 end
+                 out = out & find
+             end
+         end
+     end
+     out
+end
+
+def matchInput(column, vl)
+     vls = vl.split(",").collect{|v| v.strip || v}
+     out = []
+     e1 = vls.shift
+     r = InputSource.where(Sequel.ilike(:"#{column}", ("%" + e1 + "%"))).all
+     for row in r
+         v = row.values
+         out.push v[:id]
+     end
+     if vls.length > 0
+         vls.each do |s|
+             r = InputSource.where(Sequel.ilike(:"#{column}", ("%" + s + "%"))).all
+             find = []
+             for row in r
+                 v = row.values
+                 find.push v[:id]
+             end
+             out = out & find
+         end
+     end
+     out
+ end
+
+def matchRdatapath(column, vl)
+     vls = vl.split(",").collect{|v| v.strip || v}
+     out = []
+     e1 = vls.shift
+     r = Rdatapath.where(Sequel.ilike(:"#{column}", ("%" + e1 + "%"))).all
+     for row in r
+         v = row.values
+         out.push v[:id]
+     end
+     if vls.length > 0
+         vls.each do |s|
+             r = Rdatapath.where(Sequel.ilike(:"#{column}", ("%" + s + "%"))).all
+             find = []
+             for row in r
+                 v = row.values
+                 find.push v[:id]
+             end
+             out = out & find
+         end
+     end
+     out
+end
+
+
+
+
 
 
 
