@@ -307,6 +307,261 @@ get "/dataprovider/:dp"  do
     out.to_json
 end
 
+get "/species"  do
+    content_type "text/plain"
+    r = Resource.select(:species).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:species]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/species/:spc"  do
+    content_type "text/plain"
+    vl = params[:spc]
+    r = Resource.where(Sequel.ilike(:species, "%#{vl}%")).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        v2[:species] = v[:species]
+        v2[:taxonomyid] = v[:taxonomyid]
+        v2[:genome] = v[:genome]
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/taxonomyid"  do
+    content_type "text/plain"
+    r = Resource.select(:taxonomyid).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:taxonomyid]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/taxonomyid/:tax"  do
+    content_type "text/plain"
+    r = Resource.filter(:taxonomyid => params[:tax]).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        v2[:species] = v[:species]
+        v2[:taxonomyid] = v[:taxonomyid]
+        v2[:genome] = v[:genome]
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/genome"  do
+    content_type "text/plain"
+    r = Resource.select(:genome).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:genome]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/genome/:gn"  do
+    content_type "text/plain"
+    r = Resource.filter(:genome => params[:gn]).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        v2[:species] = v[:species]
+        v2[:taxonomyid] = v[:taxonomyid]
+        v2[:genome] = v[:genome]
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/rdataclass"  do
+    content_type "text/plain"
+    r = Rdatapath.select(:rdataclass).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:rdataclass]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/rdataclass/:rdc" do
+    content_type "text/plain"
+    r = Rdatapath.filter(:rdataclass => params[:rdc]).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/rdatapath/:rdp" do
+    content_type "text/plain"
+    vl = params[:rdp]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    if vls.length > 0
+        vls.each do |s|
+            r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + e1 + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:resource_id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/sourcetype"  do
+    content_type "text/plain"
+    r = InputSource.select(:sourcetype).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:sourcetype]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/sourcetype/:srct" do
+    content_type "text/plain"
+    r = InputSource.filter(:sourcetype => params[:srct]).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/sourceversion"  do
+    content_type "text/plain"
+    r = InputSource.select(:sourceversion).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:sourceversion]
+    end
+    JSON.pretty_generate out.uniq
+end
+
+get "/sourceversion/:srcv" do
+    content_type "text/plain"
+    r = InputSource.filter(:sourceversion => params[:srcv]).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+get "/sourceurl/:srcurl" do
+    content_type "text/plain"
+    vl = params[:srcurl]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    if vls.length > 0
+        vls.each do |s|
+            r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + e1 + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:resource_id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = []
+    for row in r
+        v = row.values
+        v2 = {}
+        v2[:ah_id] = v[:ah_id]
+        v2[:title] = v[:title]
+        v2[:description] = v[:description].force_encoding("utf-8")
+        out.push v2
+    end
+    out.to_json
+end
+
+
 
 
 
