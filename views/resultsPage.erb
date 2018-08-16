@@ -1,0 +1,55 @@
+<html>
+<head>
+    <title>BiocHub Server Results</title>
+</head>
+<body>
+
+<style>
+table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 100%;
+}
+
+td {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+}
+
+th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+    font-size: 20px;    
+}
+
+tr:nth-child(even) {
+    background-color: #dddddd;
+}
+</style>
+
+<table border="1"> 
+
+    <tr>
+        <th>ah_id</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Download</th>
+    </tr>
+
+<% result.each do |row| %>
+    <tr>
+        <td><a href= "/ahid/<%=row[:ah_id] %>"><%=row[:ah_id] %></a></td>
+        <td><%= row[:title] %></td>
+        <td><%= row[:description] %></td>
+        <td><a href= "<%= row[:download] %>">Download <%=row[:ah_id] %></a></td>
+    </tr>
+
+        
+<% end %>
+
+</table>
+
+</body>
+</html>

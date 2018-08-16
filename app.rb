@@ -109,8 +109,7 @@ get "/id/:id" do
     recipe = r.recipe
     h[:recipe] = recipe[:recipe]
     h[:recipe_package] = recipe[:package]
-    h.delete :id
-    h.delete :ah_id
+    h.delete :record_id
     h.delete :status_id
     h.delete :recipe_id
     for association in associations
@@ -138,7 +137,7 @@ get "/ahid/:id" do
     recipe = r.recipe
     h[:recipe] = recipe[:recipe]
     h[:recipe_package] = recipe[:package]
-    h.delete :id
+    h.delete :record_id
     h.delete :status_id
     h.delete :recipe_id
     for association in associations
@@ -161,15 +160,20 @@ get "/newerthan/:date"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 # accurate for ExperimentHub but not AnnotationHub
 # next version should have this as separate database field
 get "/package2/:pkg"  do
-    content_type "text/plain"
     r = Resource.filter(:preparerclass => params[:pkg]).all
     out = []
     for row in r
@@ -179,13 +183,18 @@ get "/package2/:pkg"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/package/:pkg" do
-    content_type "text/plain"
     vl = params[:pkg]
     r = Rdatapath.where(Sequel.ilike(:rdatapath, "%#{vl}%")).all
     out = []
@@ -201,13 +210,18 @@ get "/package/:pkg" do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/title/:ttl"  do
-    content_type "text/plain"
     vl = params[:ttl]
     vls = vl.split(" ")
     out = []
@@ -237,14 +251,19 @@ get "/title/:ttl"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 
 get "/description/:desc"  do
-    content_type "text/plain"
     vl = params[:desc]
     vls = vl.split(" ")
     out = []
@@ -274,24 +293,29 @@ get "/description/:desc"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/dataprovider"  do
-    content_type "text/plain"
     r = Resource.select(:dataprovider).all
     out = []
     for row in r
         v = row.values
         out.push v[:dataprovider]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available Data Providers:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/dataprovider/:dp"  do
-    content_type "text/plain"
     vl = params[:dp]
     r = Resource.where(Sequel.ilike(:dataprovider, "%#{vl}%")).all
     out = []
@@ -301,25 +325,29 @@ get "/dataprovider/:dp"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
-        v2[:dataprovider] = v[:dataprovider]
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/species"  do
-    content_type "text/plain"
     r = Resource.select(:species).all
     out = []
     for row in r
         v = row.values
         out.push v[:species]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available Species:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/species/:spc"  do
-    content_type "text/plain"
     vl = params[:spc]
     r = Resource.where(Sequel.ilike(:species, "%#{vl}%")).all
     out = []
@@ -329,27 +357,29 @@ get "/species/:spc"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
-        v2[:species] = v[:species]
-        v2[:taxonomyid] = v[:taxonomyid]
-        v2[:genome] = v[:genome]
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/taxonomyid"  do
-    content_type "text/plain"
     r = Resource.select(:taxonomyid).all
     out = []
     for row in r
         v = row.values
         out.push v[:taxonomyid]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available TaxonomyId:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/taxonomyid/:tax"  do
-    content_type "text/plain"
     r = Resource.filter(:taxonomyid => params[:tax]).all
     out = []
     for row in r
@@ -358,27 +388,29 @@ get "/taxonomyid/:tax"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
-        v2[:species] = v[:species]
-        v2[:taxonomyid] = v[:taxonomyid]
-        v2[:genome] = v[:genome]
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/genome"  do
-    content_type "text/plain"
     r = Resource.select(:genome).all
     out = []
     for row in r
         v = row.values
         out.push v[:genome]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available Genome:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/genome/:gn"  do
-    content_type "text/plain"
     r = Resource.filter(:genome => params[:gn]).all
     out = []
     for row in r
@@ -387,27 +419,29 @@ get "/genome/:gn"  do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
-        v2[:species] = v[:species]
-        v2[:taxonomyid] = v[:taxonomyid]
-        v2[:genome] = v[:genome]
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/rdataclass"  do
-    content_type "text/plain"
     r = Rdatapath.select(:rdataclass).all
     out = []
     for row in r
         v = row.values
         out.push v[:rdataclass]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available rdataclass:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/rdataclass/:rdc" do
-    content_type "text/plain"
     r = Rdatapath.filter(:rdataclass => params[:rdc]).all
     out = []
     for row in r
@@ -422,13 +456,18 @@ get "/rdataclass/:rdc" do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/rdatapath/:rdp" do
-    content_type "text/plain"
     vl = params[:rdp]
     vls = vl.split(" ")
     out = []
@@ -457,24 +496,29 @@ get "/rdatapath/:rdp" do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/sourcetype"  do
-    content_type "text/plain"
     r = InputSource.select(:sourcetype).all
     out = []
     for row in r
         v = row.values
         out.push v[:sourcetype]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available Source Types:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/sourcetype/:srct" do
-    content_type "text/plain"
     r = InputSource.filter(:sourcetype => params[:srct]).all
     out = []
     for row in r
@@ -489,24 +533,29 @@ get "/sourcetype/:srct" do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/sourceversion"  do
-    content_type "text/plain"
     r = InputSource.select(:sourceversion).all
     out = []
     for row in r
         v = row.values
         out.push v[:sourceversion]
     end
-    JSON.pretty_generate out.uniq
+    erb :listing , :locals => {:message => "Available Source Versions:",
+                               :values => out.uniq.join("<br/>")}
 end
 
 get "/sourceversion/:srcv" do
-    content_type "text/plain"
     r = InputSource.filter(:sourceversion => params[:srcv]).all
     out = []
     for row in r
@@ -521,13 +570,18 @@ get "/sourceversion/:srcv" do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get "/sourceurl/:srcurl" do
-    content_type "text/plain"
     vl = params[:srcurl]
     vls = vl.split(" ")
     out = []
@@ -556,18 +610,31 @@ get "/sourceurl/:srcurl" do
         v2[:ah_id] = v[:ah_id]
         v2[:title] = v[:title]
         v2[:description] = v[:description].force_encoding("utf-8")
+        rp = Rdatapath.find(:resource_id=> v[:id])
+        path = rp.rdatapath
+        resource = rp.resource
+        prefix = resource.location_prefix.location_prefix
+        url = prefix + path
+        v2[:download] = url
         out.push v2
     end
-    out.to_json
+    erb :resultsPage , :locals => {:result => out}
 end
 
 get '/recordstatus/:id' do
     content_type "text/plain"
-    r = Resource.filter(:id => params[:id]).all.first[:status_id]
+    id = params[:id]
+    if (id[0..1].upcase.start_with?("AH"))
+        id = id.sub(/^../, "AH")
+    elsif
+        id = "AH" + id
+    end
+    r = Resource.filter(:ah_id => id).all.first[:status_id]
     JSON.pretty_generate DB[:statuses].filter(:id => r).all.first[:status]
 end
 
 def getcols()
+    #cols = Resource.columns + Rdatapath.columns + InputSource.columns
     cols = ["title", "dataprovider", "species", "taxonomyid", "genome",
             "description", "newerthan", "rdataclass", "sourceurl",
             "sourceversion", "sourcetype"]
@@ -590,14 +657,7 @@ def whichtable(vl)
     h[:"#{vl}"]
 end
 
-get '/searchcol' do
-    #cols = Resource.columns + Rdatapath.columns + InputSource.columns
-    cols = getcols()
-    JSON.pretty_generate cols.uniq
-end
-
 get '/query/:qry' do
-    content_type "text/plain"
     qry = params[:qry]
     out = []
     qry.split(/[()]+/).each do |v|
@@ -608,7 +668,10 @@ get '/query/:qry' do
     invalid = keys - getcols()
     allidx = []
     if invalid.length > 0
-        "Invalid search columns: " + invalid.to_s
+        erb :error , :locals => {:message => "Invalid query term:",
+                                 :offenders => invalid.join("<br/>"), 
+                                 :helper => "Available query terms:<br/>",
+                                 :helper2 => getcols().join("<br/>")}
     else
          method = whichtable(keys[0])
          case method
@@ -645,12 +708,17 @@ get '/query/:qry' do
              v2[:ah_id] = v[:ah_id]
              v2[:title] = v[:title]
              v2[:description] = v[:description].force_encoding("utf-8")
+             rp = Rdatapath.find(:resource_id=> v[:id])
+             path = rp.rdatapath
+             resource = rp.resource
+             prefix = resource.location_prefix.location_prefix
+             url = prefix + path
+             v2[:download] = url
              out.push v2
         end
-        out.to_json
+        erb :resultsPage , :locals => {:result => out}
     end
 end
-
 
 
 def matchResource(column, vl)
@@ -894,6 +962,14 @@ end
 
 get '/test' do
     redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
+end
+
+get '/test2' do
+  erb :resultsPage
+end
+
+get '/test4' do
+    redirect "/"
 end
 
 __END__
