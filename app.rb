@@ -58,6 +58,15 @@ helpers do
 
 end
 
+
+
+
+##############################################
+#
+# More helper functions
+#
+##############################################
+
 def clean_hash(arr)
     arr = arr.map{|i|i.to_hash}
     for item in arr
@@ -86,64 +95,7 @@ def formatId(r, associations)
     h
 end
 
-get "/" do
-    erb :index, :locals => {:dbname => "#{sqlite_filename}"}
-end
-
-get "/metadata/#{sqlite_filename}" do
-    if config['dbtype'] == "sqlite"
-        send_file "#{basedir}/#{sqlite_filename}",
-            :filename => "#{sqlite_filename}"
-    else
-        send_file "#{basedir}/#{sqlite_filename}"
-    end
-end
-
-get "/metadata/schema_version" do
-    if DB.table_exists? :schema_info
-        DB[:schema_info].first[:version].to_s
-    else
-        "0"
-    end
-end
-
-get '/metadata/database_timestamp' do
-    content_type "text/plain"
-    DB[:timestamp].first[:timestamp].to_s
-end
-
-get '/metadata/highest_id' do
-    content_type "text/plain"
-    DB[:resources].max(:id).to_s
-end
-
-get "/id/:id" do
-    content_type "text/plain"
-    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
-    r = Resource.filter(:id => params[:id]).eager(associations).all.first
-    h = formatId(r, associations)
-    JSON.pretty_generate h
-end
-
-get "/ahid/:id" do
-    content_type "text/plain"
-    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
-    id = params[:id]
-    if (id[0..1].upcase.start_with?("AH"))
-        id = id.sub(/^../, "AH")
-    elsif
-        id = "AH" + id
-    end
-    r = Resource.filter(:ah_id => "#{id}").eager(associations).all.first
-    h = formatId(r, associations)
-    JSON.pretty_generate h
-end
-
-get "/newerthan/:date"  do
-    # a date in the format 2014-04-01
-    pd = params[:date]
-    d = DateTime.strptime(pd, "%Y-%m-%d")
-    r = Resource.filter{rdatadateadded >  d}.all
+def formatOutput(r)
     out = []
     for row in r
         v = row.values
@@ -159,478 +111,7 @@ get "/newerthan/:date"  do
         v2[:download] = url
         out.push v2
     end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-# accurate for ExperimentHub but not AnnotationHub
-# next version should have this as separate database field
-get "/package2/:pkg"  do
-    r = Resource.filter(:preparerclass => params[:pkg]).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:id] = v[:id]
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/package/:pkg" do
-    vl = params[:pkg]
-    r = Rdatapath.where(Sequel.ilike(:rdatapath, "%#{vl}%")).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:resource_id]
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/title/:ttl"  do
-    vl = params[:ttl]
-    vls = vl.split(" ")
-    out = []
-    e1 = vls.shift
-    r = Resource.where(Sequel.ilike(:title, ("%" + e1 + "%"))).all
-    for row in r
-        v = row.values
-        out.push v[:id]
-    end
-
-    if vls.length > 0
-        vls.each do |s|
-            r = Resource.where(Sequel.ilike(:title, ("%" + s + "%"))).all
-            find = []
-            for row in r
-                v = row.values
-                find.push v[:id]
-            end
-            out = out & find
-        end
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-
-get "/description/:desc"  do
-    vl = params[:desc]
-    vls = vl.split(" ")
-    out = []
-    e1 = vls.shift
-    r = Resource.where(Sequel.ilike(:description, ("%" + e1 + "%"))).all
-    for row in r
-        v = row.values
-        out.push v[:id]
-    end
-
-    if vls.length > 0
-        vls.each do |s|
-            r = Resource.where(Sequel.ilike(:description, ("%" + s + "%"))).all
-            find = []
-            for row in r
-                v = row.values
-                find.push v[:id]
-            end
-            out = out & find
-        end
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/dataprovider"  do
-    r = Resource.select(:dataprovider).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:dataprovider]
-    end
-    erb :listing , :locals => {:message => "Available Data Providers:",
-                               :link => "dataprovider",
-                               :values => out.uniq}
-end
-
-get "/dataprovider/:dp"  do
-    vl = params[:dp]
-    vl = vl.gsub("%20", " ")
-    r = Resource.where(Sequel.ilike(:dataprovider, "%#{vl}%")).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/species"  do
-    r = Resource.select(:species).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:species]
-    end
-    erb :listing , :locals => {:message => "Available Species:",
-                               :link => "species",
-                               :values => out.uniq}
-end
-
-get "/species/:spc"  do
-    vl = params[:spc]
-    vl = vl.gsub("%20", " ")
-    r = Resource.where(Sequel.ilike(:species, "%#{vl}%")).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/taxonomyid"  do
-    r = Resource.select(:taxonomyid).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:taxonomyid]
-    end
-    erb :listing , :locals => {:message => "Available TaxonomyId:",
-                               :link => "taxonomyid",
-                               :values => out.uniq}
-end
-
-get "/taxonomyid/:tax"  do
-    r = Resource.filter(:taxonomyid => params[:tax]).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/genome"  do
-    r = Resource.select(:genome).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:genome]
-    end
-    erb :listing , :locals => {:message => "Available Genome:",
-                               :link => "genome",
-                               :values => out.uniq}
-end
-
-get "/genome/:gn"  do
-    r = Resource.filter(:genome => params[:gn]).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/rdataclass"  do
-    r = Rdatapath.select(:rdataclass).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:rdataclass]
-    end
-    erb :listing , :locals => {:message => "Available rdataclass:",
-                               :link => "rdataclass",
-                               :values => out.uniq}
-end
-
-get "/rdataclass/:rdc" do
-    r = Rdatapath.filter(:rdataclass => params[:rdc]).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:resource_id]
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/rdatapath/:rdp" do
-    vl = params[:rdp]
-    vls = vl.split(" ")
-    out = []
-    e1 = vls.shift
-    r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + e1 + "%"))).all
-    for row in r
-        v = row.values
-        out.push v[:resource_id]
-    end
-    if vls.length > 0
-        vls.each do |s|
-            r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + s + "%"))).all
-            find = []
-            for row in r
-                v = row.values
-                find.push v[:resource_id]
-            end
-            out = out & find
-        end
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/sourcetype"  do
-    r = InputSource.select(:sourcetype).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:sourcetype]
-    end
-    erb :listing , :locals => {:message => "Available Source Types:",
-                               :link => "sourcetype",
-                               :values => out.uniq}
-end
-
-get "/sourcetype/:srct" do
-    r = InputSource.filter(:sourcetype => params[:srct]).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:resource_id]
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/sourceversion"  do
-    r = InputSource.select(:sourceversion).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:sourceversion]
-    end
-    erb :listing , :locals => {:message => "Available Source Versions:",
-                               :link => "sourceversion",
-                               :values => out.uniq}
-end
-
-get "/sourceversion/:srcv" do
-    r = InputSource.filter(:sourceversion => params[:srcv]).all
-    out = []
-    for row in r
-        v = row.values
-        out.push v[:resource_id]
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get "/sourceurl/:srcurl" do
-    vl = params[:srcurl]
-    vls = vl.split(" ")
-    out = []
-    e1 = vls.shift
-    r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + e1 + "%"))).all
-    for row in r
-        v = row.values
-        out.push v[:resource_id]
-    end
-    if vls.length > 0
-        vls.each do |s|
-            r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + s + "%"))).all
-            find = []
-            for row in r
-                v = row.values
-                find.push v[:resource_id]
-            end
-            out = out & find
-        end
-    end
-    r = Resource.where(id: out).all
-    out = []
-    for row in r
-        v = row.values
-        v2 = {}
-        v2[:ah_id] = v[:ah_id]
-        v2[:title] = v[:title]
-        v2[:description] = v[:description].force_encoding("utf-8")
-        rp = Rdatapath.find(:resource_id=> v[:id])
-        path = rp.rdatapath
-        resource = rp.resource
-        prefix = resource.location_prefix.location_prefix
-        url = prefix + path
-        v2[:download] = url
-        out.push v2
-    end
-    erb :resultsPage , :locals => {:result => out}
-end
-
-get '/recordstatus/:id' do
-    content_type "text/plain"
-    id = params[:id]
-    if (id[0..1].upcase.start_with?("AH"))
-        id = id.sub(/^../, "AH")
-    elsif
-        id = "AH" + id
-    end
-    r = Resource.filter(:ah_id => id).all.first[:status_id]
-    JSON.pretty_generate DB[:statuses].filter(:id => r).all.first[:status]
+    out
 end
 
 def getcols()
@@ -656,70 +137,6 @@ def whichtable(vl)
     h[:sourcetype] = "InputSource"
     h[:"#{vl}"]
 end
-
-get '/query/:qry' do
-    qry = params[:qry]
-    out = []
-    qry.split(/[()]+/).each do |v|
-        out.push v.strip
-    end
-    vls = out.select.with_index { |_, i| i.odd? }
-    keys = out.select.with_index { |_, i| i.even? }
-    invalid = keys - getcols()
-    allidx = []
-    if invalid.length > 0
-        erb :error , :locals => {:message => "Invalid query term:",
-                                 :offenders => invalid.join("<br/>"),
-                                 :helper => "Available query terms:<br/>",
-                                 :helper2 => getcols().join("<br/>")}
-    else
-         method = whichtable(keys[0])
-         case method
-         when "Resource"
-             idx = matchResource(keys[0], vls[0])
-         when "InputSource"
-             idx = matchInput(keys[0], vls[0])
-         when "Rdatapath"
-             idx = matchRdatapath(keys[0], vls[0])
-         else
-         end
-         allidx = idx
-
-         dx = 1
-         while dx < keys.length
-             method = whichtable(keys[dx])
-             case method
-             when "Resource"
-                 idx = matchResource(keys[dx], vls[dx])
-             when "InputSource"
-                 idx = matchInput(keys[dx], vls[dx])
-             when "Rdatapath"
-                 idx = matchRdatapath(keys[dx], vls[dx])
-             else
-             end
-             allidx = allidx & idx
-             dx  = dx + 1
-         end
-         r = Resource.where(id: allidx).all
-         out = []
-         for row in r
-             v = row.values
-             v2 = {}
-             v2[:ah_id] = v[:ah_id]
-             v2[:title] = v[:title]
-             v2[:description] = v[:description].force_encoding("utf-8")
-             rp = Rdatapath.find(:resource_id=> v[:id])
-             path = rp.rdatapath
-             resource = rp.resource
-             prefix = resource.location_prefix.location_prefix
-             url = prefix + path
-             v2[:download] = url
-             out.push v2
-        end
-        erb :resultsPage , :locals => {:result => out}
-    end
-end
-
 
 def matchResource(column, vl)
      vls = vl.split(",").collect{|v| v.strip || v}
@@ -804,7 +221,411 @@ end
 
 
 
+##############################################
+#
+# API functions
+#
+##############################################
 
+
+get "/" do
+    erb :index, :locals => {:dbname => "#{sqlite_filename}"}
+end
+
+get "/metadata/#{sqlite_filename}" do
+    if config['dbtype'] == "sqlite"
+        send_file "#{basedir}/#{sqlite_filename}",
+            :filename => "#{sqlite_filename}"
+    else
+        send_file "#{basedir}/#{sqlite_filename}"
+    end
+end
+
+get "/metadata/schema_version" do
+    if DB.table_exists? :schema_info
+        DB[:schema_info].first[:version].to_s
+    else
+        "0"
+    end
+end
+
+get '/metadata/database_timestamp' do
+    content_type "text/plain"
+    DB[:timestamp].first[:timestamp].to_s
+end
+
+get '/metadata/highest_id' do
+    content_type "text/plain"
+    DB[:resources].max(:id).to_s
+end
+
+get "/id/:id" do
+    content_type "text/plain"
+    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
+    r = Resource.filter(:id => params[:id]).eager(associations).all.first
+    h = formatId(r, associations)
+    JSON.pretty_generate h
+end
+
+get "/ahid/:id" do
+    content_type "text/plain"
+    associations = [:rdatapaths, :input_sources, :tags, :biocversions]
+    id = params[:id]
+    if (id[0..1].upcase.start_with?("AH"))
+        id = id.sub(/^../, "AH")
+    elsif
+        id = "AH" + id
+    end
+    r = Resource.filter(:ah_id => "#{id}").eager(associations).all.first
+    h = formatId(r, associations)
+    JSON.pretty_generate h
+end
+
+get "/newerthan/:date"  do
+    # a date in the format 2014-04-01
+    pd = params[:date]
+    d = DateTime.strptime(pd, "%Y-%m-%d")
+    r = Resource.filter{rdatadateadded >  d}.all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+# accurate for ExperimentHub but not AnnotationHub
+# next version should have this as separate database field
+get "/package2/:pkg"  do
+    r = Resource.filter(:preparerclass => params[:pkg]).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/package/:pkg" do
+    vl = params[:pkg]
+    r = Rdatapath.where(Sequel.ilike(:rdatapath, "%#{vl}%")).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/title/:ttl"  do
+    vl = params[:ttl]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Resource.where(Sequel.ilike(:title, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:id]
+    end
+
+    if vls.length > 0
+        vls.each do |s|
+            r = Resource.where(Sequel.ilike(:title, ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+
+get "/description/:desc"  do
+    vl = params[:desc]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Resource.where(Sequel.ilike(:description, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:id]
+    end
+
+    if vls.length > 0
+        vls.each do |s|
+            r = Resource.where(Sequel.ilike(:description, ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/dataprovider"  do
+    r = Resource.select(:dataprovider).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:dataprovider]
+    end
+    erb :listing , :locals => {:message => "Available Data Providers:",
+                               :link => "dataprovider",
+                               :values => out.uniq}
+end
+
+get "/dataprovider/:dp"  do
+    vl = params[:dp]
+    vl = vl.gsub("%20", " ")
+    r = Resource.where(Sequel.ilike(:dataprovider, "%#{vl}%")).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/species"  do
+    r = Resource.select(:species).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:species]
+    end
+    erb :listing , :locals => {:message => "Available Species:",
+                               :link => "species",
+                               :values => out.uniq}
+end
+
+get "/species/:spc"  do
+    vl = params[:spc]
+    vl = vl.gsub("%20", " ")
+    r = Resource.where(Sequel.ilike(:species, "%#{vl}%")).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/taxonomyid"  do
+    r = Resource.select(:taxonomyid).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:taxonomyid]
+    end
+    erb :listing , :locals => {:message => "Available TaxonomyId:",
+                               :link => "taxonomyid",
+                               :values => out.uniq}
+end
+
+get "/taxonomyid/:tax"  do
+    r = Resource.filter(:taxonomyid => params[:tax]).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/genome"  do
+    r = Resource.select(:genome).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:genome]
+    end
+    erb :listing , :locals => {:message => "Available Genome:",
+                               :link => "genome",
+                               :values => out.uniq}
+end
+
+get "/genome/:gn"  do
+    r = Resource.filter(:genome => params[:gn]).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/rdataclass"  do
+    r = Rdatapath.select(:rdataclass).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:rdataclass]
+    end
+    erb :listing , :locals => {:message => "Available rdataclass:",
+                               :link => "rdataclass",
+                               :values => out.uniq}
+end
+
+get "/rdataclass/:rdc" do
+    r = Rdatapath.filter(:rdataclass => params[:rdc]).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/rdatapath/:rdp" do
+    vl = params[:rdp]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    if vls.length > 0
+        vls.each do |s|
+            r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:resource_id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/sourcetype"  do
+    r = InputSource.select(:sourcetype).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:sourcetype]
+    end
+    erb :listing , :locals => {:message => "Available Source Types:",
+                               :link => "sourcetype",
+                               :values => out.uniq}
+end
+
+get "/sourcetype/:srct" do
+    r = InputSource.filter(:sourcetype => params[:srct]).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/sourceversion"  do
+    r = InputSource.select(:sourceversion).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:sourceversion]
+    end
+    erb :listing , :locals => {:message => "Available Source Versions:",
+                               :link => "sourceversion",
+                               :values => out.uniq}
+end
+
+get "/sourceversion/:srcv" do
+    r = InputSource.filter(:sourceversion => params[:srcv]).all
+    out = []
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get "/sourceurl/:srcurl" do
+    vl = params[:srcurl]
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:resource_id]
+    end
+    if vls.length > 0
+        vls.each do |s|
+            r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:resource_id]
+            end
+            out = out & find
+        end
+    end
+    r = Resource.where(id: out).all
+    out = formatOutput(r)
+    erb :resultsPage , :locals => {:result => out}
+end
+
+get '/recordstatus/:id' do
+    content_type "text/plain"
+    id = params[:id]
+    if (id[0..1].upcase.start_with?("AH"))
+        id = id.sub(/^../, "AH")
+    elsif
+        id = "AH" + id
+    end
+    r = Resource.filter(:ah_id => id).all.first[:status_id]
+    JSON.pretty_generate DB[:statuses].filter(:id => r).all.first[:status]
+end
+
+get '/query/:qry' do
+    qry = params[:qry]
+    out = []
+    qry.split(/[()]+/).each do |v|
+        out.push v.strip
+    end
+    vls = out.select.with_index { |_, i| i.odd? }
+    keys = out.select.with_index { |_, i| i.even? }
+    invalid = keys - getcols()
+    allidx = []
+    if invalid.length > 0
+        erb :error , :locals => {:message => "Invalid query term:",
+                                 :offenders => invalid.join("<br/>"),
+                                 :helper => "Available query terms:<br/>",
+                                 :helper2 => getcols().join("<br/>")}
+    else
+         method = whichtable(keys[0])
+         case method
+         when "Resource"
+             idx = matchResource(keys[0], vls[0])
+         when "InputSource"
+             idx = matchInput(keys[0], vls[0])
+         when "Rdatapath"
+             idx = matchRdatapath(keys[0], vls[0])
+         else
+         end
+         allidx = idx
+
+         dx = 1
+         while dx < keys.length
+             method = whichtable(keys[dx])
+             case method
+             when "Resource"
+                 idx = matchResource(keys[dx], vls[dx])
+             when "InputSource"
+                 idx = matchInput(keys[dx], vls[dx])
+             when "Rdatapath"
+                 idx = matchRdatapath(keys[dx], vls[dx])
+             else
+             end
+             allidx = allidx & idx
+             dx  = dx + 1
+         end
+         r = Resource.where(id: allidx).all
+         out = formatOutput(r)
+         erb :resultsPage , :locals => {:result => out}
+    end
+end
 
 get '/fetch/:id' do
     rp = Rdatapath.find(:id=>params[:id])
@@ -818,6 +639,31 @@ get '/fetch/:id' do
     end
     redirect url
 end
+
+get '/log_fetch' do
+    rp = Rdatapath.find(:id=>params[:id])
+    path = rp.rdatapath
+    resource = rp.resource
+    prefix = resource.location_prefix.location_prefix
+    url = prefix + path
+    unless prefix == "http://s3.amazonaws.com/annotationhub/"
+        # FIXME only do this if we are on production...
+        log_request(request, url, rp.id, resource.id)
+    end
+    url
+end
+
+
+
+
+##############################################
+#
+# Protected actions
+#
+##############################################
+
+
+
 
 post '/resource' do
     protected!
@@ -947,22 +793,20 @@ delete "/resource/:id" do
     "OK"
 end
 
-get '/log_fetch' do
-    rp = Rdatapath.find(:id=>params[:id])
-    path = rp.rdatapath
-    resource = rp.resource
-    prefix = resource.location_prefix.location_prefix
-    url = prefix + path
-    unless prefix == "http://s3.amazonaws.com/annotationhub/"
-        # FIXME only do this if we are on production...
-        log_request(request, url, rp.id, resource.id)
-    end
-    url
-end
 
-get '/test' do
-    redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
-end
+
+
+
+
+##############################################
+#
+# Tests
+#
+##############################################
+
+#get '/test' do
+#    redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
+#end
 
 get '/test2' do
   erb :resultsPage
@@ -971,5 +815,8 @@ end
 get '/test4' do
     redirect "/"
 end
+
+
+
 
 __END__
