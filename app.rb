@@ -312,11 +312,13 @@ get "/dataprovider"  do
         out.push v[:dataprovider]
     end
     erb :listing , :locals => {:message => "Available Data Providers:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "dataprovider",
+                               :values => out.uniq}
 end
 
 get "/dataprovider/:dp"  do
     vl = params[:dp]
+    vl = vl.gsub("%20", " ")
     r = Resource.where(Sequel.ilike(:dataprovider, "%#{vl}%")).all
     out = []
     for row in r
@@ -344,11 +346,13 @@ get "/species"  do
         out.push v[:species]
     end
     erb :listing , :locals => {:message => "Available Species:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "species",
+                               :values => out.uniq}
 end
 
 get "/species/:spc"  do
     vl = params[:spc]
+    vl = vl.gsub("%20", " ")
     r = Resource.where(Sequel.ilike(:species, "%#{vl}%")).all
     out = []
     for row in r
@@ -376,7 +380,8 @@ get "/taxonomyid"  do
         out.push v[:taxonomyid]
     end
     erb :listing , :locals => {:message => "Available TaxonomyId:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "taxonomyid",
+                               :values => out.uniq}
 end
 
 get "/taxonomyid/:tax"  do
@@ -407,7 +412,8 @@ get "/genome"  do
         out.push v[:genome]
     end
     erb :listing , :locals => {:message => "Available Genome:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "genome",
+                               :values => out.uniq}
 end
 
 get "/genome/:gn"  do
@@ -438,7 +444,8 @@ get "/rdataclass"  do
         out.push v[:rdataclass]
     end
     erb :listing , :locals => {:message => "Available rdataclass:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "rdataclass",
+                               :values => out.uniq}
 end
 
 get "/rdataclass/:rdc" do
@@ -515,7 +522,8 @@ get "/sourcetype"  do
         out.push v[:sourcetype]
     end
     erb :listing , :locals => {:message => "Available Source Types:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "sourcetype",
+                               :values => out.uniq}
 end
 
 get "/sourcetype/:srct" do
@@ -552,7 +560,8 @@ get "/sourceversion"  do
         out.push v[:sourceversion]
     end
     erb :listing , :locals => {:message => "Available Source Versions:",
-                               :values => out.uniq.join("<br/>")}
+                               :link => "sourceversion",
+                               :values => out.uniq}
 end
 
 get "/sourceversion/:srcv" do
