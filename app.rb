@@ -486,7 +486,7 @@ get "/rdatapath/:rdp" do
     end
     if vls.length > 0
         vls.each do |s|
-            r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + e1 + "%"))).all
+            r = Rdatapath.where(Sequel.ilike(:rdatapath, ("%" + s + "%"))).all
             find = []
             for row in r
                 v = row.values
@@ -602,7 +602,7 @@ get "/sourceurl/:srcurl" do
     end
     if vls.length > 0
         vls.each do |s|
-            r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + e1 + "%"))).all
+            r = InputSource.where(Sequel.ilike(:sourceurl, ("%" + s + "%"))).all
             find = []
             for row in r
                 v = row.values
