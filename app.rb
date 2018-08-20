@@ -217,7 +217,29 @@ def matchRdatapath(column, vl)
 end
 
 
+def getIds(vl, column)
+    vls = vl.split(" ")
+    out = []
+    e1 = vls.shift
+    r = Resource.where(Sequel.ilike(:"#{column}", ("%" + e1 + "%"))).all
+    for row in r
+        v = row.values
+        out.push v[:id]
+    end
 
+    if vls.length > 0
+        vls.each do |s|
+            r = Resource.where(Sequel.ilike(:"#{column}", ("%" + s + "%"))).all
+            find = []
+            for row in r
+                v = row.values
+                find.push v[:id]
+            end
+            out = out & find
+        end
+    end
+    out
+end
 
 
 
@@ -313,26 +335,7 @@ end
 
 get "/title/:ttl"  do
     vl = params[:ttl]
-    vls = vl.split(" ")
-    out = []
-    e1 = vls.shift
-    r = Resource.where(Sequel.ilike(:title, ("%" + e1 + "%"))).all
-    for row in r
-        v = row.values
-        out.push v[:id]
-    end
-
-    if vls.length > 0
-        vls.each do |s|
-            r = Resource.where(Sequel.ilike(:title, ("%" + s + "%"))).all
-            find = []
-            for row in r
-                v = row.values
-                find.push v[:id]
-            end
-            out = out & find
-        end
-    end
+    out = getIds(vl, "title")
     r = Resource.where(id: out).all
     out = formatOutput(r)
     erb :resultsPage , :locals => {:result => out}
@@ -341,26 +344,7 @@ end
 
 get "/description/:desc"  do
     vl = params[:desc]
-    vls = vl.split(" ")
-    out = []
-    e1 = vls.shift
-    r = Resource.where(Sequel.ilike(:description, ("%" + e1 + "%"))).all
-    for row in r
-        v = row.values
-        out.push v[:id]
-    end
-
-    if vls.length > 0
-        vls.each do |s|
-            r = Resource.where(Sequel.ilike(:description, ("%" + s + "%"))).all
-            find = []
-            for row in r
-                v = row.values
-                find.push v[:id]
-            end
-            out = out & find
-        end
-    end
+    out = getIds(vl, "description")
     r = Resource.where(id: out).all
     out = formatOutput(r)
     erb :resultsPage , :locals => {:result => out}
