@@ -67,6 +67,25 @@ def clean_hash(arr)
     arr
 end
 
+def formatId(r, associations)
+    h = r.to_hash
+    location_prefix = r.location_prefix
+    h.delete :location_prefix_id
+    h[:location_prefix] = location_prefix[:location_prefix]
+    recipe = r.recipe
+    h[:recipe] = recipe[:recipe]
+    h[:recipe_package] = recipe[:package]
+    h.delete :record_id
+    h.delete :status_id
+    h.delete :recipe_id
+    for association in associations
+        h[association] = clean_hash(r.send(association.to_s))
+    end
+    h[:tags] = h[:tags].map{|i|i[:tag]}
+    h[:biocversions] = h[:biocversions].map{|i|i[:biocversion]}
+    h
+end
+
 get "/" do
     erb :index, :locals => {:dbname => "#{sqlite_filename}"}
 end
@@ -102,21 +121,7 @@ get "/id/:id" do
     content_type "text/plain"
     associations = [:rdatapaths, :input_sources, :tags, :biocversions]
     r = Resource.filter(:id => params[:id]).eager(associations).all.first
-    h = r.to_hash
-    location_prefix = r.location_prefix
-    h.delete :location_prefix_id
-    h[:location_prefix] = location_prefix[:location_prefix]
-    recipe = r.recipe
-    h[:recipe] = recipe[:recipe]
-    h[:recipe_package] = recipe[:package]
-    h.delete :record_id
-    h.delete :status_id
-    h.delete :recipe_id
-    for association in associations
-        h[association] = clean_hash(r.send(association.to_s))
-    end
-    h[:tags] = h[:tags].map{|i|i[:tag]}
-    h[:biocversions] = h[:biocversions].map{|i|i[:biocversion]}
+    h = formatId(r, associations)
     JSON.pretty_generate h
 end
 
@@ -130,21 +135,7 @@ get "/ahid/:id" do
         id = "AH" + id
     end
     r = Resource.filter(:ah_id => "#{id}").eager(associations).all.first
-    h = r.to_hash
-    location_prefix = r.location_prefix
-    h.delete :location_prefix_id
-    h[:location_prefix] = location_prefix[:location_prefix]
-    recipe = r.recipe
-    h[:recipe] = recipe[:recipe]
-    h[:recipe_package] = recipe[:package]
-    h.delete :record_id
-    h.delete :status_id
-    h.delete :recipe_id
-    for association in associations
-        h[association] = clean_hash(r.send(association.to_s))
-    end
-    h[:tags] = h[:tags].map{|i|i[:tag]}
-    h[:biocversions] = h[:biocversions].map{|i|i[:biocversion]}
+    h = formatId(r, associations)
     JSON.pretty_generate h
 end
 
@@ -678,7 +669,7 @@ get '/query/:qry' do
     allidx = []
     if invalid.length > 0
         erb :error , :locals => {:message => "Invalid query term:",
-                                 :offenders => invalid.join("<br/>"), 
+                                 :offenders => invalid.join("<br/>"),
                                  :helper => "Available query terms:<br/>",
                                  :helper2 => getcols().join("<br/>")}
     else
