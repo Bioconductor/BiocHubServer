@@ -559,7 +559,7 @@ get '/recordstatus/:id' do
         id = "AH" + id
     end
     r = Resource.filter(:ah_id => id).all.first[:status_id]
-    JSON.pretty_generate DB[:statuses].filter(:id => r).all.first[:status]
+    DB[:statuses].filter(:id => r).all.first[:status]
 end
 
 get '/query/:qry' do
