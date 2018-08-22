@@ -21,35 +21,60 @@ th {
     border: 1px solid #dddddd;
     text-align: left;
     padding: 8px;
-    font-size: 20px;    
+    font-size: 20px;
 }
 
 tr:nth-child(even) {
     background-color: #dddddd;
 }
+
+.offscreen {
+    position: absolute;
+    left: -999em;
+}
+
 </style>
 
-<table border="1"> 
+<script>
+
+function myFunction(id) {
+  /* Get the text field */
+  var copyText = document.getElementById(id);
+
+  /* Select the text field */
+  copyText.select();
+
+  /* Copy the text inside the text field */
+  document.execCommand("copy");
+
+}
+
+</script>
+
+<table border="1">
 
     <tr>
-        <th>ah_id</th>
-        <th>Title</th>
-        <th>Description</th>
-        <th>Download</th>
+	<th>ah_id</th>
+	<th>Title</th>
+	<th>Description</th>
+	<th>Download File</th>
+	<th>Copy R Code</th>
     </tr>
 
 <% result.each do |row| %>
     <tr>
-        <td><a href= "/ahid/<%=row[:ah_id] %>"><%=row[:ah_id] %></a></td>
-        <td><%= row[:title] %></td>
-        <td><%= row[:description] %></td>
-        <td><a href= "<%= row[:download] %>">Download <%=row[:ah_id] %></a></td>
+	<td><a href= "/ahid/<%=row[:ah_id] %>"><%=row[:ah_id] %></a></td>
+	<td><%= row[:title] %></td>
+	<td><%= row[:description] %></td>
+	<td><a href= "<%= row[:download] %>"><img src="../images/download.png"
+	alt="Download <%=row[:ah_id] %>" title="Download <%=row[:ah_id] %>"
+	width=30 height=30></a></td>
+	<td><input class="offscreen" style="width:275px;border:none" type="text" value=AnnotationHub::AnnotationHub()[['"<%=row[:ah_id]%>"']] id="<%=row[:ah_id]%>"><button onclick=myFunction("<%=row[:ah_id]%>")><img src="../images/copyToClip.png" width=30 height=30 atl=AnnotationHub::AnnotationHub()[['"<%=row[:ah_id]%>"']] title=AnnotationHub::AnnotationHub()[['"<%=row[:ah_id]%>"']]></td>
     </tr>
 
-        
+
 <% end %>
 
 </table>
-
 </body>
 </html>

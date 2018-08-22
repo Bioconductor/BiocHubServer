@@ -792,15 +792,9 @@ end
 #    redirect "ftp://ftp.ncbi.nih.gov/snp/organisms/human_9606_b142_GRCh38/VCF/common_all_20150114_papu.vcf.gz.tbi"
 #end
 
-get '/test2' do
-  erb :resultsPage
-end
-
 get '/test4' do
     redirect "/"
 end
-
-
 
 
 __END__
