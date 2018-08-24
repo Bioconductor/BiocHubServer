@@ -67,7 +67,7 @@ function myFunction(id) {
 	<td><a href= "<%= row[:download] %>"><img src="../images/download.png"
 	alt="Download <%=row[:ah_id] %>" title="Download <%=row[:ah_id] %>"
 	width=30 height=30></a></td>
-	<td><input class="offscreen" style="width:275px;border:none" type="text" value=AnnotationHub::AnnotationHub()[['"<%=row[:ah_id]%>"']] id="<%=row[:ah_id]%>"><button onclick=myFunction("<%=row[:ah_id]%>")><img src="../images/copyToClip.png" width=30 height=30 atl=AnnotationHub::AnnotationHub()[['"<%=row[:ah_id]%>"']] title=AnnotationHub::AnnotationHub()[['"<%=row[:ah_id]%>"']]></td>
+	<td><input class="offscreen" style="width:275px;border:none" type="text" value=AnnotationHub::AnnotationHub()[["<%=row[:ah_id]%>"]] id="<%=row[:ah_id]%>"><button onclick=myFunction("<%=row[:ah_id]%>")><img src="../images/copyToClip.png" width=30 height=30 atl=AnnotationHub::AnnotationHub()[["<%=row[:ah_id]%>"]] title=AnnotationHub::AnnotationHub()[["<%=row[:ah_id]%>"]]></td>
 	<td><%= row[:title] %></td>
 	<td><%= row[:description] %></td>
     </tr>
