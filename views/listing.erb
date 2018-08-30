@@ -35,13 +35,21 @@ tr:nth-child(even) {
 }
 </style>
 
+<script type="text/javascript" src="jquery/jquery.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
+
+
 <div class="indented">
 
-<table border="1">
+<table border="1" id="result_table" class="display">
 
+    <thead>
     <tr>
 	<th><%=message%></th>
     </tr>
+    </thead>
+    <tbody>
     <% values.each do |row| %>
 	<tr>
 	    <% if row.is_a?(String) %>
@@ -53,9 +61,15 @@ tr:nth-child(even) {
 
 	</tr>
     <% end %>
+    </tbody>
 </table>
 </div>
 
+<script>
+$(document).ready( function () {
+    $('#result_table').DataTable();
+} );
+</script>
 
 </body>
 </html>

@@ -30,14 +30,22 @@ tr:nth-child(even) {
 
 </style>
 
-<table border="1">
+<script type="text/javascript" src="../jquery/jquery.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.19/css/jquery.dataTables.css">
+<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.10.19/js/jquery.dataTables.js"></script>
 
+
+<table border="1" id="resultpage_table" class="display">
+
+    <thead>
     <tr>
 	<th>ah_id</th>
 	<th>Download File</th>
 	<th>Title</th>
 	<th>Description</th>
     </tr>
+    </thead>
+    <tbody>
 
 <% result.each do |row| %>
     <tr>
@@ -51,7 +59,15 @@ tr:nth-child(even) {
 
 
 <% end %>
+    </tbody>
 
 </table>
+
+<script>
+$(document).ready( function () {
+    $('#resultpage_table').DataTable();
+} );
+</script>
+
 </body>
 </html>
