@@ -631,7 +631,7 @@ get '/fetch/:id' do
         org = urlEnt[urlEnt.length-1]
         redirect url_string.sub(org, CGI::escape(org))
     else
-        redirect url
+        redirect url_string
     end
 end
 
