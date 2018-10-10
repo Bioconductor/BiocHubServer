@@ -7,6 +7,8 @@ require 'pp'
 require 'json'
 require 'tmpdir'
 require 'socket'
+require 'cgi'
+require 'net/http'
 require_relative './db_init'
 require_relative './logging_init'
 
@@ -614,12 +616,23 @@ get '/fetch/:id' do
     path = rp.rdatapath
     resource = rp.resource
     prefix = resource.location_prefix.location_prefix
-    url = prefix + path
+    url_string = prefix + path
     unless prefix == "http://s3.amazonaws.com/annotationhub/"
         # FIXME only do this if we are on production...
-        log_request(request, url, rp.id, resource.id)
+        log_request(request, url_string, rp.id, resource.id)
     end
-    redirect url
+
+    url = URI.parse(url_string)
+    req = Net::HTTP.new(url.host, url.port)
+    req.use_ssl = (url.scheme == 'https')
+    res = req.request_head(url.path)
+    if (res.code != "200")
+        urlEnt = url_string.split("/")
+        org = urlEnt[urlEnt.length-1]
+        redirect url_string.sub(org, CGI::escape(org))
+    else
+        redirect url
+    end
 end
 
 get '/log_fetch' do
