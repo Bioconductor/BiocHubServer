@@ -640,7 +640,9 @@ get '/log_fetch' do
     url
 end
 
-
+get '/robots.txt' do
+    erb :robots
+end
 
 
 ##############################################

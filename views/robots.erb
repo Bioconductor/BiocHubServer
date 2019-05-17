@@ -1,0 +1,13 @@
+<html>
+<head>
+    <title>robots.txt file</title>
+</head>
+<body>
+    
+<% File.open('robots.txt').each do |line| %>
+<%=    line %>
+<br>
+<% end %>
+
+</body>
+</html>
