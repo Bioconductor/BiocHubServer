@@ -159,7 +159,7 @@ class Resource < Sequel::Model
     def after_save
         super
         if self.ah_id =~ /==$/
-            self.update(:ah_id=>"AH#{self.id}")
+            self.update(:ah_id=>"AH#{self.id}.0")
         end
     end
 

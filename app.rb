@@ -615,15 +615,23 @@ get '/fetch/:id' do
     path = rp.rdatapath
     resource = rp.resource
     prefix = resource.location_prefix.location_prefix
+    version = rp.version_id
     url_string = prefix + path
-    unless prefix == "http://s3.amazonaws.com/annotationhub/"
+    
+#    unless prefix == "http://s3.amazonaws.com/annotationhub/"
         # FIXME only do this if we are on production...
-        log_request(request, url_string, rp.id, resource.id)
-    end
+#        log_request(request, url_string, rp.id, resource.id)
+#    end
 
     urlEnt = url_string.split("/")
     org = urlEnt[urlEnt.length-1]
-    redirect url_string.sub(org, CGI::escape(org))
+
+    url = url_string.sub(org, CGI::escape(org))
+    if url.start_with? "http://s3.amazonaws.com"
+      url = url +"?versionId=" + version
+    end
+    
+    redirect url 
  
 end
 
@@ -633,10 +641,10 @@ get '/log_fetch' do
     resource = rp.resource
     prefix = resource.location_prefix.location_prefix
     url = prefix + path
-    unless prefix == "http://s3.amazonaws.com/annotationhub/"
+#    unless prefix == "http://s3.amazonaws.com/annotationhub/"
         # FIXME only do this if we are on production...
-        log_request(request, url, rp.id, resource.id)
-    end
+#        log_request(request, url, rp.id, resource.id)
+#    end
     url
 end
 
@@ -704,6 +712,25 @@ post '/resource' do
                 rsrc["recipe_id"] = recipe.id
             end
 
+            if rsrc.has_key? "ah_id"
+              if rsrc["ah_id"].strip.empty?  or  rsrc["ah_id"].strip == "null" or rsrc["ah_id"].strip.nil?
+                rsrc.delete "ah_id"
+              else
+                idlist=[]
+                exp="select * from resources where (ah_id REGEXP BINARY '^"+rsrc["ah_id"].split('.')[0]+"')"
+                DB[exp].all.each{ |r| idlist.push(r[:ah_id])}
+                if idlist.empty?
+                  status 500
+                  return "invalid ahid specified: "+ rscr["ah_id"]
+                end
+                newlist = idlist.map { |x| x.to_s.split('.').last}
+                vl = newlist.reject{ |a| a.start_with?("AH")}.max
+                vl = vl.to_i + 1
+                rsrc["ah_id"] = rsrc["ah_id"]+"."+vl.to_s
+              end              
+            end
+
+            
             resource = Resource.new rsrc
             unless resource.valid?
                 status 500
@@ -732,6 +759,23 @@ post '/resource' do
                     # if rdatapath.has_key? "derivedmd5"
                     #     rdatapath["rdatamd5"] = rdatapath.delete("derivedmd5")
                     # end
+                    versionid = "null"
+                    url=obj["location_prefix"]+rdatapath["rdatapath"]
+                    if url.start_with? "http://s3.amazonaws.com/"
+
+                      bucket = File.basename(obj["location_prefix"])
+                      prefix = rdatapath["rdatapath"]
+                      #versions=`aws s3api list-object-versions --bucket lori-test-version-conversion --prefix Justpkgs.txt --output json`
+                      versions =`aws s3api list-object-versions --bucket #{bucket} --prefix #{prefix} --output json`
+                      ver_json = JSON.parse(versions)
+                      for ver in ver_json["Versions"]
+                        if ver["IsLatest"]
+                          versionid = ver["VersionId"]
+                        end
+                      end
+                      
+                    end
+                    rdatapath["version_id"] = versionid
                     Rdatapath.create(rdatapath)
                 end
             end

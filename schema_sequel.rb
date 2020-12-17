@@ -20,7 +20,7 @@ if config['dbtype'] == 'mysql'
     dbname = config['mysql_url'].split('/').last
     _DB = Sequel.connect(config['mysql_url']) 
     _DB.run "drop database if exists #{dbname};"
-    _DB.run "create database #{dbname};"
+    _DB.run "create database #{dbname} CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;"
     _DB.run "use #{dbname};"
 elsif config['dbtype'] == 'sqlite'
     dbfile = "#{basedir}/#{config['dbname']}.sqlite3"
